@@ -87,6 +87,9 @@ public class XMLMapperBuilder extends BaseBuilder {
     this.resource = resource;
   }
 
+  /**
+   * 解析 mapper.xml文件
+   */
   public void parse() {
     if (!configuration.isResourceLoaded(resource)) {
       configurationElement(parser.evalNode("/mapper"));
@@ -103,24 +106,41 @@ public class XMLMapperBuilder extends BaseBuilder {
     return sqlFragments.get(refid);
   }
 
+  /**
+   * 解析mapper.xml文件中的标签
+   * @param context
+   */
   private void configurationElement(XNode context) {
     try {
       String namespace = context.getStringAttribute("namespace");
+      // 这里 namespace 不能为空，为必填内容
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
+      /**
+       * 1. 解析完的CacheRef放在cacheRefMap中
+       * 2. cacheRefMap是一个HashMap
+       * 3. 位于Configuration对象中
+       * 4. Key为mapper文件的namespace，Value为<cache-ref>中配置的namespace
+       */
       cacheRefElement(context.evalNode("cache-ref"));
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       resultMapElements(context.evalNodes("/mapper/resultMap"));
       sqlElement(context.evalNodes("/mapper/sql"));
+
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
   }
 
+  /**
+   * 解析  <select>、<insert>、<update>、<delete> 属性标签
+   *    当前mapper的namespace+"."+<select>|<insert>|<update>|<delete>标签中的id属性，Value为MappedStatement对象
+   * @param list
+   */
   private void buildStatementFromContext(List<XNode> list) {
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
@@ -186,16 +206,24 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void cacheRefElement(XNode context) {
     if (context != null) {
+      // 解析完缓存在 cacheRefMap 中 key 为 namespace
       configuration.addCacheRef(builderAssistant.getCurrentNamespace(), context.getStringAttribute("namespace"));
+      // 创建 CacheRefResolver 对象，并执行
       CacheRefResolver cacheRefResolver = new CacheRefResolver(builderAssistant, context.getStringAttribute("namespace"));
       try {
         cacheRefResolver.resolveCacheRef();
       } catch (IncompleteElementException e) {
+        // 解析失败，添加到 configuration 的 incompleteCacheRefs 中
         configuration.addIncompleteCacheRef(cacheRefResolver);
       }
     }
   }
 
+  /**
+   * 解析cache标签内容 mybtais的缓存
+   * @param context
+   * @throws Exception
+   */
   private void cacheElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type", "PERPETUAL");
@@ -211,6 +239,13 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析 parameterMap b标签
+   *  解析完的ParameterMap放在parameterMaps中
+   *  Key为当前mapper的namespace+"."+<parameterMap>标签中的id属性，Value为ParameterMap对象
+   * @param list
+   * @throws Exception
+   */
   private void parameterMapElement(List<XNode> list) throws Exception {
     for (XNode parameterMapNode : list) {
       String id = parameterMapNode.getStringAttribute("id");
@@ -238,6 +273,12 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析 resultMap标签
+   *    Key为当前mapper的namespace+"."+<resultMap>标签中的id属性，Value为ResultMap对象
+   * @param list
+   * @throws Exception
+   */
   private void resultMapElements(List<XNode> list) throws Exception {
     for (XNode resultMapNode : list) {
       try {
@@ -319,6 +360,14 @@ public class XMLMapperBuilder extends BaseBuilder {
     return builderAssistant.buildDiscriminator(resultType, column, javaTypeClass, jdbcTypeEnum, typeHandlerClass, discriminatorMap);
   }
 
+  /**
+   *  解析 sql 片段
+   *
+   *  解析完的内容放在sqlFragments中
+   *  Key为当前mapper的namespace+"."+<sql>标签中的id属性，Value为sql这个XNode本身
+   * @param list
+   * @throws Exception
+   */
   private void sqlElement(List<XNode> list) throws Exception {
     if (configuration.getDatabaseId() != null) {
       sqlElement(list, configuration.getDatabaseId());

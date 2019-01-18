@@ -125,6 +125,11 @@ public class TypeAliasRegistry {
     registerAliases(packageName, Object.class);
   }
 
+  /**
+   * 解析 properties 属性
+   * @param packageName
+   * @param superType
+   */
   public void registerAliases(String packageName, Class<?> superType){
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
@@ -132,12 +137,17 @@ public class TypeAliasRegistry {
     for(Class<?> type : typeSet){
       // Ignore inner classes and interfaces (including package-info.java)
       // Skip also inner classes. See issue #6
+      // 不能是匿名类 不是接口 不是 成员类
       if (!type.isAnonymousClass() && !type.isInterface() && !type.isMemberClass()) {
         registerAlias(type);
       }
     }
   }
 
+  /**
+   * 注册
+   * @param type
+   */
   public void registerAlias(Class<?> type) {
     String alias = type.getSimpleName();
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
@@ -147,6 +157,12 @@ public class TypeAliasRegistry {
     registerAlias(alias, type);
   }
 
+  /**
+   *  alias 小写
+   *  将alias以及Class对象放到TYPE_ALIASES中，TYPE_ALIASES是一个HashMap
+   * @param alias
+   * @param value
+   */
   public void registerAlias(String alias, Class<?> value) {
     if (alias == null) {
       throw new TypeException("The parameter alias cannot be null");

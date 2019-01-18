@@ -28,6 +28,8 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 /**
  * Builds {@link SqlSession} instances.
  *
+ *  sqlSession工厂
+ *
  * @author Clinton Begin
  */
 public class SqlSessionFactoryBuilder {
@@ -44,9 +46,19 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+  /**
+   * 内部都会走这个方法
+   * @param reader
+   * @param environment
+   * @param properties
+   * @return
+   */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
+      //
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+      // parser.parse () 这里加载具体的 xml
+      // 将配置文件中定义的属性加载到 Configuration 中，部分加载到BaseBuilder中
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);

@@ -151,6 +151,10 @@ public class Reflector {
     }
   }
 
+  /**
+   * 校验是否具有set属性
+   * @param cls
+   */
   private void addSetMethods(Class<?> cls) {
     Map<String, List<Method>> conflictingSetters = new HashMap<String, List<Method>>();
     Method[] methods = getClassMethods(cls);
@@ -163,6 +167,7 @@ public class Reflector {
         }
       }
     }
+    // Setter有可能在类中被重载导致有多个，此时取Setter中方法参数只有一个且参数类型与Getter一致的Setter
     resolveSetterConflicts(conflictingSetters);
   }
 

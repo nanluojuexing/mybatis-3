@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2015 the original author or authors.
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -148,11 +148,7 @@ public class Resources {
   }
 
   /*
-   * Returns a resource on the classpath as a Reader object
-   *
-   * @param resource The resource to find
-   * @return The resource
-   * @throws java.io.IOException If the resource cannot be found or read
+   * 将输入的路径转换为 流对象返回
    */
   public static Reader getResourceAsReader(String resource) throws IOException {
     Reader reader;

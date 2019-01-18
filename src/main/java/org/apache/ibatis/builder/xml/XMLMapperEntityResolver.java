@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2016 the original author or authors.
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -32,11 +32,18 @@ import org.xml.sax.SAXException;
  */
 public class XMLMapperEntityResolver implements EntityResolver {
 
+  /**
+   * 指定mybatis-config.xml 文件和映射文件对应的 dtd 的systemId
+   */
   private static final String IBATIS_CONFIG_SYSTEM = "ibatis-3-config.dtd";
   private static final String IBATIS_MAPPER_SYSTEM = "ibatis-3-mapper.dtd";
   private static final String MYBATIS_CONFIG_SYSTEM = "mybatis-3-config.dtd";
   private static final String MYBATIS_MAPPER_SYSTEM = "mybatis-3-mapper.dtd";
 
+
+  /**
+   * 指定mybatis-config.xml 文件和映射文件对应的 dtd 文件的具体位置
+   */
   private static final String MYBATIS_CONFIG_DTD = "org/apache/ibatis/builder/xml/mybatis-3-config.dtd";
   private static final String MYBATIS_MAPPER_DTD = "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd";
 
@@ -54,6 +61,7 @@ public class XMLMapperEntityResolver implements EntityResolver {
     try {
       if (systemId != null) {
         String lowerCaseSystemId = systemId.toLowerCase(Locale.ENGLISH);
+        // 查找systemId指定的文档dtd文档，调用 getInputSource方法获取dtd
         if (lowerCaseSystemId.contains(MYBATIS_CONFIG_SYSTEM) || lowerCaseSystemId.contains(IBATIS_CONFIG_SYSTEM)) {
           return getInputSource(MYBATIS_CONFIG_DTD, publicId, systemId);
         } else if (lowerCaseSystemId.contains(MYBATIS_MAPPER_SYSTEM) || lowerCaseSystemId.contains(IBATIS_MAPPER_SYSTEM)) {

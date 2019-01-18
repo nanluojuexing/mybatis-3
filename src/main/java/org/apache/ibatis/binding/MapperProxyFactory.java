@@ -44,6 +44,7 @@ public class MapperProxyFactory<T> {
 
   @SuppressWarnings("unchecked")
   protected T newInstance(MapperProxy<T> mapperProxy) {
+    // 返回一个代理对象
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
   }
 

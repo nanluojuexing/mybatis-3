@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
+ *    Copyright 2009-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -40,14 +40,30 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
+ * 基于xpath的解析器
  * @author Clinton Begin
  */
 public class XPathParser {
 
+  /**
+   * XML Document 对象
+   */
   private final Document document;
+  /**
+   * 是否开启校验
+   */
   private boolean validation;
+  /**
+   * 加载本地的dtd文件
+   */
   private EntityResolver entityResolver;
+  /**
+   *  mybatis-config.xml中定义的properties标签
+   */
   private Properties variables;
+  /**
+   * XPath 对象 查询 XML 中的节点和元素
+   */
   private XPath xpath;
 
   public XPathParser(String xml) {
@@ -110,12 +126,20 @@ public class XPathParser {
     this.document = document;
   }
 
+  /**
+   * 构造 XPathParser 对象
+   * @param xml XML 文件地址
+   * @param validation 是否校验 XML
+   * @param variables 变量 Properties 对象
+   * @param entityResolver XML 实体解析器
+   */
   public XPathParser(String xml, boolean validation, Properties variables, EntityResolver entityResolver) {
     commonConstructor(validation, variables, entityResolver);
     this.document = createDocument(new InputSource(new StringReader(xml)));
   }
 
   public XPathParser(Reader reader, boolean validation, Properties variables, EntityResolver entityResolver) {
+    // 实例化XPath 迎来解析xml文档，获取属性和还俗
     commonConstructor(validation, variables, entityResolver);
     this.document = createDocument(new InputSource(reader));
   }
@@ -139,7 +163,9 @@ public class XPathParser {
   }
 
   public String evalString(Object root, String expression) {
+    //1。
     String result = (String) evaluate(expression, root, XPathConstants.STRING);
+    //2。
     result = PropertyParser.parse(result, variables);
     return result;
   }
@@ -217,6 +243,13 @@ public class XPathParser {
     return new XNode(this, node, variables);
   }
 
+  /**
+   * xpath 的 evaluate(String expression, Object root, QName returnType) 方法，获得指定元素或节点的值
+   * @param expression
+   * @param root
+   * @param returnType
+   * @return
+   */
   private Object evaluate(String expression, Object root, QName returnType) {
     try {
       return xpath.evaluate(expression, root, returnType);
@@ -225,19 +258,32 @@ public class XPathParser {
     }
   }
 
+  /**
+   * 调用 createDocument 方法之前一定要先调用 commonConstructor 进行初始化
+   * @param inputSource
+   * @return
+   */
   private Document createDocument(InputSource inputSource) {
-    // important: this must only be called AFTER common constructor
     try {
+      // 创建 DocumentBuilderFactory 对象
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      //配置 DocumentBuilderFactory
+      //验证dtd文件
       factory.setValidating(validation);
-
+      // 是否支持xml空间
       factory.setNamespaceAware(false);
+      // 是否忽略注释
       factory.setIgnoringComments(true);
+      // 是否会略元素中的空白
       factory.setIgnoringElementContentWhitespace(false);
+      // 否将CDATA节点转换为Text节点，并将其附加到相邻（如果有）的Text节点
       factory.setCoalescing(false);
+      // 是否扩展实体引用节点
       factory.setExpandEntityReferences(true);
 
+      // 创建 DocumentBuilder 并配置
       DocumentBuilder builder = factory.newDocumentBuilder();
+      // 设置 EntityResolver接口对象
       builder.setEntityResolver(entityResolver);
       builder.setErrorHandler(new ErrorHandler() {
         @Override
@@ -254,6 +300,7 @@ public class XPathParser {
         public void warning(SAXParseException exception) throws SAXException {
         }
       });
+      // 加载xml文件
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);
@@ -264,6 +311,7 @@ public class XPathParser {
     this.validation = validation;
     this.entityResolver = entityResolver;
     this.variables = variables;
+    // 创建XPathFactory 对象
     XPathFactory factory = XPathFactory.newInstance();
     this.xpath = factory.newXPath();
   }
