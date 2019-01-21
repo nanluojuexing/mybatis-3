@@ -113,6 +113,7 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    //todo 这里就是 mybatis使用二级缓存的时候
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
@@ -336,6 +337,7 @@ public abstract class BaseExecutor implements Executor {
 
   protected Connection getConnection(Log statementLog) throws SQLException {
     Connection connection = transaction.getConnection();
+    // 开启 做一层代理，代理的内容是在调用prepareStatement、prepareCall等方法前或者方法后打印日志，具体可见ConnectionLogger、PreparedStatementLogger、ResultSetLogger与StatementLogger的invoke方法
     if (statementLog.isDebugEnabled()) {
       return ConnectionLogger.newInstance(connection, statementLog, queryStack);
     } else {

@@ -190,11 +190,19 @@ public class DefaultSqlSession implements SqlSession {
     return update(statement, null);
   }
 
+  /**
+   *  insert  update delete 方法最终都会调用 insert 方法
+   * @param statement Unique identifier matching the statement to execute.
+   * @param parameter A parameter object to pass to the statement.
+   * @return
+   */
   @Override
   public int update(String statement, Object parameter) {
     try {
       dirty = true;
+      // 根据statement从Configuration中获取MappedStatement
       MappedStatement ms = configuration.getMappedStatement(statement);
+      // wrapCollection 包装集合类
       return executor.update(ms, wrapCollection(parameter));
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error updating database.  Cause: " + e, e);
@@ -317,6 +325,14 @@ public class DefaultSqlSession implements SqlSession {
     return (!autoCommit && dirty) || force;
   }
 
+  /**
+   * 包装集合类
+   *   collection 类型
+   *   list 类型
+   *   array 类型
+   * @param object
+   * @return
+   */
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<Object>();

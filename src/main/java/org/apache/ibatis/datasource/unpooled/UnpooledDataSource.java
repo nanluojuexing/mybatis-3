@@ -182,6 +182,13 @@ public class UnpooledDataSource implements DataSource {
     this.defaultTransactionIsolationLevel = defaultTransactionIsolationLevel;
   }
 
+  /**
+   * 配置连接的属性
+   * @param username
+   * @param password
+   * @return
+   * @throws SQLException
+   */
   private Connection doGetConnection(String username, String password) throws SQLException {
     Properties props = new Properties();
     if (driverProperties != null) {
@@ -197,8 +204,10 @@ public class UnpooledDataSource implements DataSource {
   }
 
   private Connection doGetConnection(Properties properties) throws SQLException {
+    // 判断driver 是否初始化
     initializeDriver();
     Connection connection = DriverManager.getConnection(url, properties);
+    // 设置事物隔离级别
     configureConnection(connection);
     return connection;
   }

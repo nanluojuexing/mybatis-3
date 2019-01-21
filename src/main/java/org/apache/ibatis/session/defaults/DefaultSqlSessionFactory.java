@@ -44,6 +44,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
   @Override
   public SqlSession openSession() {
+    // DataSource中获取Session，第一个参数的值是ExecutorType.SIMPLE
     return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
   }
 
@@ -87,12 +88,23 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   * 获得 sqlsession
+   * @param execType
+   * @param level
+   * @param autoCommit  false 默认事物是不自动提交的
+   * @return
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
+      // 获得数据库的配置
       final Environment environment = configuration.getEnvironment();
+      // 获得事物管理器的 这里配置的为 jdbc
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      // 获取一个事物
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+
       final Executor executor = configuration.newExecutor(tx, execType);
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {

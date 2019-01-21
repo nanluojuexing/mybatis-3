@@ -35,6 +35,8 @@ import org.apache.ibatis.transaction.Transaction;
 /**
  * @author Clinton Begin
  * @author Eduardo Macarron
+ *
+ * 缓存的执行器 （装饰者模式） executor
  */
 public class CachingExecutor implements Executor {
 
@@ -70,8 +72,16 @@ public class CachingExecutor implements Executor {
     return delegate.isClosed();
   }
 
+  /**
+   *
+   * @param ms
+   * @param parameterObject
+   * @return
+   * @throws SQLException
+   */
   @Override
   public int update(MappedStatement ms, Object parameterObject) throws SQLException {
+    // 这里会刷新缓存
     flushCacheIfRequired(ms);
     return delegate.update(ms, parameterObject);
   }
