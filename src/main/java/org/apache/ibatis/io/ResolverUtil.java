@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class ResolverUtil<T> {
   }
 
   /** The set of matches being accumulated. */
-  private Set<Class<? extends T>> matches = new HashSet<Class<? extends T>>();
+  private Set<Class<? extends T>> matches = new HashSet<>();
 
   /**
    * The ClassLoader to use when looking for classes. If null then the ClassLoader returned
@@ -233,7 +233,7 @@ public class ResolverUtil<T> {
   /**
    * Converts a Java package name to a path that can be looked up with a call to
    * {@link ClassLoader#getResources(String)}.
-   * 
+   *
    * @param packageName The Java package name to convert to a path
    */
   protected String getPackagePath(String packageName) {

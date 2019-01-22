@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2018 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -59,8 +59,8 @@ public abstract class BaseBuilder {
   }
 
   protected Set<String> stringSetValueOf(String value, String defaultValue) {
-    value = (value == null ? defaultValue : value);
-    return new HashSet<String>(Arrays.asList(value.split(",")));
+    value = value == null ? defaultValue : value;
+    return new HashSet<>(Arrays.asList(value.split(",")));
   }
 
   protected JdbcType resolveJdbcType(String alias) {
@@ -127,7 +127,7 @@ public abstract class BaseBuilder {
     if (type != null && !TypeHandler.class.isAssignableFrom(type)) {
       throw new BuilderException("Type " + type.getName() + " is not a valid TypeHandler because it does not implement TypeHandler interface");
     }
-    @SuppressWarnings( "unchecked" ) // already verified it is a TypeHandler
+    @SuppressWarnings("unchecked") // already verified it is a TypeHandler
     Class<? extends TypeHandler<?>> typeHandlerType = (Class<? extends TypeHandler<?>>) type;
     return resolveTypeHandler(javaType, typeHandlerType);
   }

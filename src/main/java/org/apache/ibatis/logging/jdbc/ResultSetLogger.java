@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,19 +29,19 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
- * ResultSet proxy to add logging
- * 
+ * ResultSet proxy to add logging.
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
- * 
+ *
  */
 public final class ResultSetLogger extends BaseJdbcLogger implements InvocationHandler {
 
-  private static Set<Integer> BLOB_TYPES = new HashSet<Integer>();
+  private static Set<Integer> BLOB_TYPES = new HashSet<>();
   private boolean first = true;
   private int rows;
   private final ResultSet rs;
-  private final Set<Integer> blobColumns = new HashSet<Integer>();
+  private final Set<Integer> blobColumns = new HashSet<>();
 
   static {
     BLOB_TYPES.add(Types.BINARY);
@@ -53,7 +53,7 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
     BLOB_TYPES.add(Types.NCLOB);
     BLOB_TYPES.add(Types.VARBINARY);
   }
-  
+
   private ResultSetLogger(ResultSet rs, Log statementLog, int queryStack) {
     super(statementLog, queryStack);
     this.rs = rs;
@@ -64,10 +64,10 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
-      }    
+      }
       Object o = method.invoke(rs, params);
       if ("next".equals(method.getName())) {
-        if (((Boolean) o)) {
+        if ((Boolean) o) {
           rows++;
           if (isTraceEnabled()) {
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -128,8 +128,8 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
     trace(row.toString(), false);
   }
 
-  /*
-   * Creates a logging version of a ResultSet
+  /**
+   * Creates a logging version of a ResultSet.
    *
    * @param rs - the ResultSet to proxy
    * @return - the ResultSet with logging
@@ -140,8 +140,8 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
     return (ResultSet) Proxy.newProxyInstance(cl, new Class[]{ResultSet.class}, handler);
   }
 
-  /*
-   * Get the wrapped result set
+  /**
+   * Get the wrapped result set.
    *
    * @return the resultSet
    */

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class XMLIncludeTransformer {
   }
 
   /**
-   * Read placeholders and their values from include node definition. 
+   * Read placeholders and their values from include node definition.
    * @param node Include node instance
    * @param inheritedVariablesContext Current context used for replace variables in new variables values
    * @return variables context from include instance (no inherited values)
@@ -120,7 +120,7 @@ public class XMLIncludeTransformer {
         // Replace variables inside
         String value = PropertyParser.parse(getStringAttribute(n, "value"), inheritedVariablesContext);
         if (declaredProperties == null) {
-          declaredProperties = new HashMap<String, String>();
+          declaredProperties = new HashMap<>();
         }
         if (declaredProperties.put(name, value) != null) {
           throw new BuilderException("Variable " + name + " defined twice in the same include definition");

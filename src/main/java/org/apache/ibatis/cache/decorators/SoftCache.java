@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2015 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ public class SoftCache implements Cache {
   public SoftCache(Cache delegate) {
     this.delegate = delegate;
     this.numberOfHardLinks = 256;
-    this.hardLinksToAvoidGarbageCollection = new LinkedList<Object>();
-    this.queueOfGarbageCollectedEntries = new ReferenceQueue<Object>();
+    this.hardLinksToAvoidGarbageCollection = new LinkedList<>();
+    this.queueOfGarbageCollectedEntries = new ReferenceQueue<>();
   }
 
   @Override
@@ -74,7 +74,7 @@ public class SoftCache implements Cache {
       if (result == null) {
         delegate.removeObject(key);
       } else {
-        // See #586 (and #335) modifications need more than a read lock 
+        // See #586 (and #335) modifications need more than a read lock
         synchronized (hardLinksToAvoidGarbageCollection) {
           hardLinksToAvoidGarbageCollection.addFirst(result);
           if (hardLinksToAvoidGarbageCollection.size() > numberOfHardLinks) {
