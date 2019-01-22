@@ -68,7 +68,6 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
       final TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
       // 获得主键属性 如果为空，则直接返回，说明不需要主键
       final String[] keyProperties = ms.getKeyProperties();
-      //
       final ResultSetMetaData rsmd = rs.getMetaData();
       TypeHandler<?>[] typeHandlers = null;
       //

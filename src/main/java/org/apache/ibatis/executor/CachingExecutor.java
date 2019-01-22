@@ -88,7 +88,9 @@ public class CachingExecutor implements Executor {
 
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    // 获取真正的执行sql
     BoundSql boundSql = ms.getBoundSql(parameterObject);
+    // 根据参数构建缓存
     CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
     return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
@@ -102,13 +104,18 @@ public class CachingExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
+    // MyBatis二级缓存的生命周期即整个应用的生命周期
     Cache cache = ms.getCache();
+    // 这里没有配置缓存
     if (cache != null) {
+      // flushCache=true或者flushCache=false判断是否要清理二级缓存
       flushCacheIfRequired(ms);
       if (ms.isUseCache() && resultHandler == null) {
+        // 保证MyBatis二级缓存不会存储存储过程的结果
         ensureNoOutParams(ms, boundSql);
         @SuppressWarnings("unchecked")
         List<E> list = (List<E>) tcm.getObject(cache, key);
+        // 如果没有获取到数据，直接查询数据库
         if (list == null) {
           list = delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
           tcm.putObject(cache, key, list); // issue #578 and #116
@@ -116,6 +123,7 @@ public class CachingExecutor implements Executor {
         return list;
       }
     }
+    // 调用 BaseExecutor 中的 query 方法
     return delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 

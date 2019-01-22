@@ -186,8 +186,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final List<Object> multipleResults = new ArrayList<Object>();
 
     int resultSetCount = 0;
+    // 获得对应的 ResultSet 并将ResultSet包装为ResultSetWrapper，ResultSetWrapper除了包含了ResultSet之外，
+    // 还依次定义了数据库返回的每条数据的每行列名、列对应的JDBC类型、列对应的Java Class的类型，
+    // 除此之外最主要的是还包含了TypeHandlerRegister（类型处理器，所有的参数都是通过TypeHandler进行设置的
     ResultSetWrapper rsw = getFirstResultSet(stmt);
-
+    //
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
     int resultMapCount = resultMaps.size();
     validateResultMapsCount(rsw, resultMapCount);

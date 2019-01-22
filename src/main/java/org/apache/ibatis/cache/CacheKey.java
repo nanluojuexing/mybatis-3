@@ -23,6 +23,15 @@ import org.apache.ibatis.reflection.ArrayUtil;
 
 /**
  * @author Clinton Begin
+ *
+ * 缓存
+ *   mybtais中一级缓存的条件
+ *
+ *     1。<select>标签所在的 Mapper 的 Namespace + <select> 标签的id属性
+ *     2。RowBounds的offset和limit属性，RowBounds是MyBatis用于处理分页的一个类，offset默认为0，limit默认为Integer.MAX_VALUE
+ *     3。<select>标签中定义的sql语句
+ *     4。输入参数的具体参数值，一个int值就update一个int，一个String值就update一个String，一个List就轮询里面的每个元素进行update
+ *
  */
 public class CacheKey implements Cloneable, Serializable {
 

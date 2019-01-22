@@ -26,6 +26,11 @@ public class InterceptorChain {
 
   private final List<Interceptor> interceptors = new ArrayList<Interceptor>();
 
+  /**
+   * 为目标对象添加拦截器
+   * @param target 为 Executor、ParameterHandler、ResultSetHandler、StatementHandler接口的实现类
+   * @return
+   */
   public Object pluginAll(Object target) {
     for (Interceptor interceptor : interceptors) {
       target = interceptor.plugin(target);
@@ -33,10 +38,18 @@ public class InterceptorChain {
     return target;
   }
 
+  /**
+   * 添加拦截器
+   * @param interceptor
+   */
   public void addInterceptor(Interceptor interceptor) {
     interceptors.add(interceptor);
   }
-  
+
+  /**
+   * 获取当前拦截器
+   * @return
+   */
   public List<Interceptor> getInterceptors() {
     return Collections.unmodifiableList(interceptors);
   }
