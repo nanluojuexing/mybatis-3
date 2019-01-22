@@ -38,6 +38,8 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * mysql H2等主键生成
  */
 public class Jdbc3KeyGenerator implements KeyGenerator {
 
@@ -60,12 +62,16 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   public void processBatch(MappedStatement ms, Statement stmt, Collection<Object> parameters) {
     ResultSet rs = null;
     try {
+      // 返回自增的主键
       rs = stmt.getGeneratedKeys();
       final Configuration configuration = ms.getConfiguration();
       final TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
+      // 获得主键属性 如果为空，则直接返回，说明不需要主键
       final String[] keyProperties = ms.getKeyProperties();
+      //
       final ResultSetMetaData rsmd = rs.getMetaData();
       TypeHandler<?>[] typeHandlers = null;
+      //
       if (keyProperties != null && rsmd.getColumnCount() >= keyProperties.length) {
         for (Object parameter : parameters) {
           // there should be one row for each statement (also one for each parameter)

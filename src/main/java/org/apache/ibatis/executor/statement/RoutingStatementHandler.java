@@ -30,10 +30,15 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 /**
+ *
+ * 装饰器模式，增强 statementHandler
  * @author Clinton Begin
  */
 public class RoutingStatementHandler implements StatementHandler {
 
+  /**
+   * 被委托的 StatementHandler 对象
+   */
   private final StatementHandler delegate;
 
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
