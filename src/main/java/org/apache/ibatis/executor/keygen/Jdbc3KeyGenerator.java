@@ -59,17 +59,22 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   }
 
   public void processBatch(MappedStatement ms, Statement stmt, Object parameter) {
+    // 获得主键属性 如果为空，则直接返回，说明不需要主键
     final String[] keyProperties = ms.getKeyProperties();
     if (keyProperties == null || keyProperties.length == 0) {
       return;
     }
+    // 获得返回的自增主键
     try (ResultSet rs = stmt.getGeneratedKeys()) {
       final Configuration configuration = ms.getConfiguration();
       if (rs.getMetaData().getColumnCount() >= keyProperties.length) {
+        // 获得唯一的参数对象
         Object soleParam = getSoleParameter(parameter);
         if (soleParam != null) {
+          // 设置主键们，到参数 soleParam 中
           assignKeysToParam(configuration, rs, keyProperties, soleParam);
         } else {
+          // 设置主键们，到参数 parameter 中
           assignKeysToOneOfParams(configuration, rs, keyProperties, (Map<?, ?>) parameter);
         }
       }
@@ -142,9 +147,12 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   }
 
   private Object getSoleParameter(Object parameter) {
+    // 如果对象是非map,直接返回
     if (!(parameter instanceof ParamMap || parameter instanceof StrictMap)) {
       return parameter;
     }
+    // 如果是map对象，则获取第一个元素的值
+    // 如果有多个元素，则说明获取不到唯一的参数对象，则返回 null
     Object soleParam = null;
     for (Object paramValue : ((Map<?, ?>) parameter).values()) {
       if (soleParam == null) {
