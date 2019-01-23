@@ -20,6 +20,8 @@ import java.util.Properties;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * 动态属性解析器
  */
 public class PropertyParser {
 
@@ -50,15 +52,32 @@ public class PropertyParser {
     // Prevent Instantiation
   }
 
+  /**
+   * 解析占位符
+   * @param string
+   * @param variables
+   * @return
+   */
   public static String parse(String string, Properties variables) {
+    //  创建 VariableTokenHandler 对象
     VariableTokenHandler handler = new VariableTokenHandler(variables);
+    //  创建 GenericTokenParser 对象
     GenericTokenParser parser = new GenericTokenParser("${", "}", handler);
     return parser.parse(string);
   }
 
   private static class VariableTokenHandler implements TokenHandler {
+    /**
+     * <properties> 节点下 定义的键值对 用于替换占位符
+     */
     private final Properties variables;
+    /**
+     *  是否支持占位符中的默认值的功能
+     */
     private final boolean enableDefaultValue;
+    /**
+     * 指定占位符和默认值之间的分隔符
+     */
     private final String defaultValueSeparator;
 
     private VariableTokenHandler(Properties variables) {
@@ -73,23 +92,30 @@ public class PropertyParser {
 
     @Override
     public String handleToken(String content) {
+      // 检测 variables 是否为空
       if (variables != null) {
         String key = content;
+        // 检测是否支持占位符中使用默认值的功能
         if (enableDefaultValue) {
+          // 查找分隔符
           final int separatorIndex = content.indexOf(defaultValueSeparator);
           String defaultValue = null;
           if (separatorIndex >= 0) {
+            // 获取占位符名称
             key = content.substring(0, separatorIndex);
             defaultValue = content.substring(separatorIndex + defaultValueSeparator.length());
           }
+          // 获取默认值
           if (defaultValue != null) {
             return variables.getProperty(key, defaultValue);
           }
         }
+        // 不支持默认值功能的，直接查找 variables 集合
         if (variables.containsKey(key)) {
           return variables.getProperty(key);
         }
       }
+      // 无 variables ，直接返回
       return "${" + content + "}";
     }
   }

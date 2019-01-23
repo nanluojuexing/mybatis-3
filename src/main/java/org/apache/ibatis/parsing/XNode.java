@@ -35,6 +35,10 @@ public class XNode {
   private final String name;
   private final String body;
   private final Properties attributes;
+
+  /**
+   * mybatis-config.xml 配置文件中 <properties> 节点下定义的键值对
+   */
   private final Properties variables;
   private final XPathParser xpathParser;
 

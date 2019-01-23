@@ -29,6 +29,8 @@ import org.xml.sax.SAXException;
  *
  * @author Clinton Begin
  * @author Eduardo Macarron
+ *
+ * 加载本地的 mybatis-3-config.dtd 和 mybatis-3-mapper.dtd 这两个 DTD 文件
  */
 public class XMLMapperEntityResolver implements EntityResolver {
 
@@ -37,7 +39,14 @@ public class XMLMapperEntityResolver implements EntityResolver {
   private static final String MYBATIS_CONFIG_SYSTEM = "mybatis-3-config.dtd";
   private static final String MYBATIS_MAPPER_SYSTEM = "mybatis-3-mapper.dtd";
 
+  /**
+   *  本地的 mybatis-config.dtd文件
+   */
   private static final String MYBATIS_CONFIG_DTD = "org/apache/ibatis/builder/xml/mybatis-3-config.dtd";
+
+  /**
+   * 本地 mybatis-mapper.dtd 文件
+   */
   private static final String MYBATIS_MAPPER_DTD = "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd";
 
   /**
@@ -72,6 +81,7 @@ public class XMLMapperEntityResolver implements EntityResolver {
       try {
         InputStream in = Resources.getResourceAsStream(path);
         source = new InputSource(in);
+        // 设置  publicId、systemId 属性
         source.setPublicId(publicId);
         source.setSystemId(systemId);
       } catch (IOException e) {

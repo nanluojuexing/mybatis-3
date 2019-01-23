@@ -99,6 +99,10 @@ public class XMLConfigBuilder extends BaseBuilder {
     return configuration;
   }
 
+  /**
+   * 解析标签的属性的时候，会调用xpathParser中 evl* 系列方法
+   * @param root
+   */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
