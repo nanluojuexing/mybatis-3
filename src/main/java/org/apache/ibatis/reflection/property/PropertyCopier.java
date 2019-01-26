@@ -37,6 +37,7 @@ public final class PropertyCopier {
    * @param destinationBean
    */
   public static void copyBeanProperties(Class<?> type, Object sourceBean, Object destinationBean) {
+    // 循环，从当前类 开始 不段复制到父类，直到父类不存在
     Class<?> parent = type;
     while (parent != null) {
       final Field[] fields = parent.getDeclaredFields();

@@ -24,8 +24,8 @@ public interface Invoker {
 
   /**
    * 执行调用
-   * @param target
-   * @param args
+   * @param target 目标
+   * @param args 参数
    * @return
    * @throws IllegalAccessException
    * @throws InvocationTargetException

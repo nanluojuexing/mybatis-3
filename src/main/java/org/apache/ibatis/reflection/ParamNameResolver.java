@@ -100,6 +100,8 @@ public class ParamNameResolver {
   }
 
   /**
+   *
+   *  参数名与值的映射
    * <p>
    * A single non-special parameter is returned without a name.
    * Multiple parameters are named using the naming rule.

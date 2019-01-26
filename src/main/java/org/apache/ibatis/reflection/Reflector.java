@@ -144,7 +144,7 @@ public class Reflector {
     Method[] methods = getClassMethods(cls);
     //遍历所有的方法  查找类中定义的getter方法
     for (Method method : methods) {
-      // 参数大于 0 ，说明不是 getting 方法，忽略
+      // 参数大于 0 ，说明不是 getter 方法，忽略
       if (method.getParameterTypes().length > 0) {
         continue;
       }
@@ -182,7 +182,7 @@ public class Reflector {
         Class<?> candidateType = candidate.getReturnType();
         // 类型相同
         if (candidateType.equals(winnerType)) {
-          // 返回值了诶选哪个相同，应该在 getClassMethods 方法中，已经合并。所以抛出 ReflectionException 异常
+          // 返回值相同，应该在 getClassMethods 方法中，已经合并。所以抛出 ReflectionException 异常
           if (!boolean.class.equals(candidateType)) {
             throw new ReflectionException(
                 "Illegal overloaded getter method with ambiguous type for property "
@@ -193,6 +193,7 @@ public class Reflector {
           } else if (candidate.getName().startsWith("is")) {
             winner = candidate;
           }
+          //
         } else if (candidateType.isAssignableFrom(winnerType)) {
           // OK getter type is descendant
           // 符合选择子类。因为子类可以修改放大返回值。例如，父类的一个方法的返回值为 List ，子类对该方法的返回值可以覆写为 ArrayList
@@ -212,7 +213,9 @@ public class Reflector {
   }
 
   private void addGetMethod(String name, Method method) {
+    // 判断是否合理的属性名
     if (isValidPropertyName(name)) {
+      // 添加到getMethods中
       getMethods.put(name, new MethodInvoker(method));
       Type returnType = TypeParameterResolver.resolveReturnType(method, type);
       getTypes.put(name, typeToClass(returnType));
@@ -230,6 +233,7 @@ public class Reflector {
     Method[] methods = getClassMethods(cls);
     for (Method method : methods) {
       String name = method.getName();
+      // 方法名是set开头的，参数为1
       if (name.startsWith("set") && name.length() > 3) {
         if (method.getParameterTypes().length == 1) {
           name = PropertyNamer.methodToProperty(name);
@@ -260,6 +264,7 @@ public class Reflector {
       ReflectionException exception = null;
       for (Method setter : setters) {
         Class<?> paramType = setter.getParameterTypes()[0];
+        // 这里和getterType优先级的相同的，直接使用
         if (paramType.equals(getterType)) {
           // should be the best match
           match = setter;
@@ -267,6 +272,7 @@ public class Reflector {
         }
         if (exception == null) {
           try {
+            // 选择一个更加匹配的
             match = pickBetterSetter(match, setter, propName);
           } catch (ReflectionException e) {
             // there could still be the 'best match'
@@ -333,6 +339,10 @@ public class Reflector {
     return result;
   }
 
+  /**
+   *  初始化 getMethods + getTypes 和 setMethods + setTypes ，通过遍历 fields 属性
+   * @param clazz
+   */
   private void addFields(Class<?> clazz) {
     // 获得全部的字段
     Field[] fields = clazz.getDeclaredFields();
@@ -353,6 +363,7 @@ public class Reflector {
         addGetField(field);
       }
     }
+    // 递归，处理父类
     if (clazz.getSuperclass() != null) {
       addFields(clazz.getSuperclass());
     }

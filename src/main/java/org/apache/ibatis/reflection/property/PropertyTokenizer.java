@@ -23,12 +23,25 @@ import java.util.Iterator;
  *  属性分词器
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
+  /**
+   * 当前字符串
+   */
   private String name;
+  /**
+   * 索引
+   */
   private final String indexedName;
+  /**
+   * 编号
+   */
   private String index;
+  /**
+   * 剩余字符串
+   */
   private final String children;
 
   public PropertyTokenizer(String fullname) {
+    // 初始化 name  children 字符串模,使用 '.' 作为分割
     int delim = fullname.indexOf('.');
     if (delim > -1) {
       name = fullname.substring(0, delim);
@@ -37,7 +50,9 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
       name = fullname;
       children = null;
     }
+    // 记录当前的 name
     indexedName = name;
+    // 若存在 [ ，则获得 index ，并修改 name
     delim = name.indexOf('[');
     if (delim > -1) {
       index = name.substring(delim + 1, name.length() - 1);

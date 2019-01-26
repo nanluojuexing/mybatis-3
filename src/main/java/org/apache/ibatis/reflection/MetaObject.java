@@ -29,6 +29,8 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
  * @author Clinton Begin
+ *
+ * 对象元数据，提供对象的属性值的获取和设置等方法
  */
 public class MetaObject {
 
@@ -44,6 +46,7 @@ public class MetaObject {
     this.objectWrapperFactory = objectWrapperFactory;
     this.reflectorFactory = reflectorFactory;
 
+    // 更具不同类型的object创建对应的ObjectWrapper对象
     if (object instanceof ObjectWrapper) {
       this.objectWrapper = (ObjectWrapper) object;
     } else if (objectWrapperFactory.hasWrapperFor(object)) {
@@ -141,6 +144,11 @@ public class MetaObject {
     }
   }
 
+  /**
+   * 创建指定属性的
+   * @param name
+   * @return
+   */
   public MetaObject metaObjectForProperty(String name) {
     Object value = getValue(name);
     return MetaObject.forObject(value, objectFactory, objectWrapperFactory, reflectorFactory);
