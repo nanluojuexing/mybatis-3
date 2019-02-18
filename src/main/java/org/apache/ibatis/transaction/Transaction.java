@@ -19,6 +19,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
+ * 事物接口
+ *
  * Wraps a database connection.
  * Handles the connection lifecycle that comprises: its creation, preparation, commit/rollback and close.
  *
@@ -27,6 +29,8 @@ import java.sql.SQLException;
 public interface Transaction {
 
   /**
+   * 获取连接
+   *
    * Retrieve inner database connection.
    * @return DataBase connection
    * @throws SQLException
@@ -34,24 +38,31 @@ public interface Transaction {
   Connection getConnection() throws SQLException;
 
   /**
+   * 提交事物
+   *
    * Commit inner database connection.
    * @throws SQLException
    */
   void commit() throws SQLException;
 
   /**
+   * 回滚事物
+   *
    * Rollback inner database connection.
    * @throws SQLException
    */
   void rollback() throws SQLException;
 
   /**
+   * 关闭连接
+   *
    * Close inner database connection.
    * @throws SQLException
    */
   void close() throws SQLException;
 
   /**
+   * 获得事物超时时间
    * Get transaction timeout if set.
    * @throws SQLException
    */
