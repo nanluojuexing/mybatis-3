@@ -26,6 +26,8 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
  * @author Clinton Begin
+ *
+ *  非池化的 数据库连接实现类，每次请求的时候打开连接和关闭连接
  */
 public class UnpooledDataSourceFactory implements DataSourceFactory {
 
@@ -38,6 +40,11 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
     this.dataSource = new UnpooledDataSource();
   }
 
+  /**
+   * 初始化properties属性
+   *
+   * @param properties
+   */
   @Override
   public void setProperties(Properties properties) {
     Properties driverProperties = new Properties();

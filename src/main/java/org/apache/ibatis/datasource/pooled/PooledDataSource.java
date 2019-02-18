@@ -40,18 +40,45 @@ public class PooledDataSource implements DataSource {
 
   private static final Log log = LogFactory.getLog(PooledDataSource.class);
 
+  /**
+   * 记录池化的对象
+   */
   private final PoolState state = new PoolState(this);
 
   private final UnpooledDataSource dataSource;
 
-  // OPTIONAL CONFIGURATION FIELDS
+  /**
+   * 任意时间活跃的线程数量
+   */
   protected int poolMaximumActiveConnections = 10;
+  /**
+   * 任意时间内空闲的线程数量
+   */
   protected int poolMaximumIdleConnections = 5;
+  /**
+   * 在强制返回前，池中连接被检出时间
+   */
   protected int poolMaximumCheckoutTime = 20000;
+  /**
+   *
+   */
   protected int poolTimeToWait = 20000;
+  /**
+   * 坏连接的容忍度的底层设置,作用于每一个尝试从缓存池获取连接的线程. 如果这个线程获取到的是一个坏的连接，那么这个数据源允许这个线程尝试重新获取一个新的连接，
+   * 但是这个重新尝试的次数不应该超过 poolMaximumIdleConnections 与 poolMaximumLocalBadConnectionTolerance 之和
+   */
   protected int poolMaximumLocalBadConnectionTolerance = 3;
+  /**
+   * 发送到数据库的侦测查询
+   */
   protected String poolPingQuery = "NO PING QUERY SET";
+  /**
+   * 是否开启侦测查询
+   */
   protected boolean poolPingEnabled;
+  /**
+   * 配置 poolPingQuery 的频率
+   */
   protected int poolPingConnectionsNotUsedFor;
 
   private int expectedConnectionTypeCode;

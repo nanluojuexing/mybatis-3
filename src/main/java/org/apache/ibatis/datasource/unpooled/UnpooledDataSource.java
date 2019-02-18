@@ -47,6 +47,9 @@ public class UnpooledDataSource implements DataSource {
   private String password;
 
   private Boolean autoCommit;
+  /**
+   * 默认的事物连接隔离级别
+   */
   private Integer defaultTransactionIsolationLevel;
 
   static {
