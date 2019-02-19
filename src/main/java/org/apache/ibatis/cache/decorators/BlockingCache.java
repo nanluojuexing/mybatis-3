@@ -25,6 +25,7 @@ import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheException;
 
 /**
+ *  阻塞的cache 实现
  * Simple blocking decorator
  *
  * Simple and inefficient version of EhCache's BlockingCache decorator.
@@ -36,8 +37,14 @@ import org.apache.ibatis.cache.CacheException;
  */
 public class BlockingCache implements Cache {
 
+  /**
+   * 超时等待时间
+   */
   private long timeout;
   private final Cache delegate;
+  /**
+   * 缓存键与 reentrantLock对象的关系
+   */
   private final ConcurrentHashMap<Object, ReentrantLock> locks;
 
   public BlockingCache(Cache delegate) {
@@ -66,9 +73,12 @@ public class BlockingCache implements Cache {
 
   @Override
   public Object getObject(Object key) {
+    // 获得锁
     acquireLock(key);
+    // 获取缓存值
     Object value = delegate.getObject(key);
     if (value != null) {
+      // 释放锁
       releaseLock(key);
     }
     return value;
@@ -91,12 +101,23 @@ public class BlockingCache implements Cache {
     return null;
   }
 
+  /**
+   * 获得 ReentrantLock 对象。如果不存在，进行添加
+   *
+   * @param key 缓存键
+   * @return ReentrantLock 对象
+   */
   private ReentrantLock getLockForKey(Object key) {
     return locks.computeIfAbsent(key, k -> new ReentrantLock());
   }
 
+  /**
+   * 锁定 ReentrantLock 对象
+   * @param key
+   */
   private void acquireLock(Object key) {
     Lock lock = getLockForKey(key);
+    // 获得锁，直到超时
     if (timeout > 0) {
       try {
         boolean acquired = lock.tryLock(timeout, TimeUnit.MILLISECONDS);
@@ -107,12 +128,19 @@ public class BlockingCache implements Cache {
         throw new CacheException("Got interrupted while trying to acquire lock for key " + key, e);
       }
     } else {
+      //释放锁
       lock.lock();
     }
   }
 
+  /**
+   * 释放对象
+   * @param key
+   */
   private void releaseLock(Object key) {
+    // 获得 ReentrantLock 对象
     ReentrantLock lock = locks.get(key);
+    // 判断是否当前线程持有
     if (lock.isHeldByCurrentThread()) {
       lock.unlock();
     }

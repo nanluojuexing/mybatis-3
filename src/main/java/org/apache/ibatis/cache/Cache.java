@@ -18,6 +18,7 @@ package org.apache.ibatis.cache;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
+ * 缓存容器接口
  * SPI for cache providers.
  * <p>
  * One instance of cache will be created for each namespace.
@@ -42,17 +43,20 @@ import java.util.concurrent.locks.ReadWriteLock;
 public interface Cache {
 
   /**
+   * 缓存对象的id
    * @return The identifier of this cache
    */
   String getId();
 
   /**
+   * 向缓存中添加数据，key是CacheKey value是查询结果
    * @param key Can be any object but usually it is a {@link CacheKey}
    * @param value The result of a select.
    */
   void putObject(Object key, Object value);
 
   /**
+   * 根据指定key获取缓存的结果
    * @param key The key
    * @return The object stored in the cache.
    */
@@ -68,6 +72,7 @@ public interface Cache {
    * This way other threads will wait for the value to be
    * available instead of hitting the database.
    *
+   *删除 key对应的缓存项
    *
    * @param key The key
    * @return Not used
