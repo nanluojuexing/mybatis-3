@@ -26,6 +26,8 @@ import org.apache.ibatis.cache.CacheException;
 
 /**
  *  阻塞的cache 实现
+ *    当线程获取缓存值的时候，如果不存在，则会阻塞后续的其他线程获取该缓存；
+ *    因为当线程 A 在获取不到缓存值时，一般会去设置对应的缓存值，这样就避免其他也需要该缓存的线程 B、C 等，重复添加缓存
  * Simple blocking decorator
  *
  * Simple and inefficient version of EhCache's BlockingCache decorator.
@@ -65,8 +67,10 @@ public class BlockingCache implements Cache {
   @Override
   public void putObject(Object key, Object value) {
     try {
+      // 添加缓存
       delegate.putObject(key, value);
     } finally {
+      // 释放锁
       releaseLock(key);
     }
   }
@@ -84,6 +88,11 @@ public class BlockingCache implements Cache {
     return value;
   }
 
+  /**
+   * 移除锁
+   * @param key The key
+   * @return
+   */
   @Override
   public Object removeObject(Object key) {
     // despite of its name, this method is called only to release locks

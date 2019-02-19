@@ -22,22 +22,39 @@ import java.util.List;
 import org.apache.ibatis.reflection.ArrayUtil;
 
 /**
+ * 缓存键
+ *
  * @author Clinton Begin
  */
 public class CacheKey implements Cloneable, Serializable {
 
   private static final long serialVersionUID = 1146682552656046210L;
 
+  /**
+   * 单例
+   */
   public static final CacheKey NULL_CACHE_KEY = new NullCacheKey();
 
+  /**
+   * 默认 {@link #multiplier} 的值
+   */
   private static final int DEFAULT_MULTIPLYER = 37;
+  /**
+   * 默认 {@link #hashcode} 的值
+   */
   private static final int DEFAULT_HASHCODE = 17;
 
+  /**
+   * hashcode的求值系数
+   */
   private final int multiplier;
   private int hashcode;
   private long checksum;
   private int count;
   // 8/21/2017 - Sonarlint flags this as needing to be marked transient.  While true if content is not serializable, this is not always true and thus should not be marked transient.
+  /**
+   * 计算hashcode对象的集合
+   */
   private List<Object> updateList;
 
   public CacheKey() {
@@ -49,6 +66,7 @@ public class CacheKey implements Cloneable, Serializable {
 
   public CacheKey(Object[] objects) {
     this();
+    // 基于object更新相关的属性
     updateAll(objects);
   }
 
@@ -56,15 +74,19 @@ public class CacheKey implements Cloneable, Serializable {
     return updateList.size();
   }
 
+  /**
+   * 更新相关属性
+   * @param object
+   */
   public void update(Object object) {
     int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object);
 
     count++;
     checksum += baseHashCode;
     baseHashCode *= count;
-
+    //计算新的hashcode
     hashcode = multiplier * hashcode + baseHashCode;
-
+    // 添加 object 到 updateList 中
     updateList.add(object);
   }
 

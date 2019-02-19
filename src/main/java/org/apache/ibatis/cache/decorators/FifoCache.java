@@ -22,6 +22,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 基于先进先出的淘汰机制的 Cache 实现类
+ *    会存在重复元素的问题
  * FIFO (first in, first out) cache decorator.
  *
  * @author Clinton Begin
@@ -29,7 +31,15 @@ import org.apache.ibatis.cache.Cache;
 public class FifoCache implements Cache {
 
   private final Cache delegate;
+  /**
+   * 双端队列，记录缓存键的添加
+   *
+   * linkedlist
+   */
   private final Deque<Object> keyList;
+  /**
+   * 队列上限
+   */
   private int size;
 
   public FifoCache(Cache delegate) {
@@ -54,6 +64,7 @@ public class FifoCache implements Cache {
 
   @Override
   public void putObject(Object key, Object value) {
+    //循环keyList
     cycleKeyList(key);
     delegate.putObject(key, value);
   }
@@ -63,6 +74,11 @@ public class FifoCache implements Cache {
     return delegate.getObject(key);
   }
 
+  /**
+   * 这里移除缓存时，不会移除keyList占用的位置
+   * @param key The key
+   * @return
+   */
   @Override
   public Object removeObject(Object key) {
     return delegate.removeObject(key);
@@ -80,7 +96,9 @@ public class FifoCache implements Cache {
   }
 
   private void cycleKeyList(Object key) {
+    // 添加到keyList队尾
     keyList.addLast(key);
+    // 超过上限，将队首的元素移除
     if (keyList.size() > size) {
       Object oldestKey = keyList.removeFirst();
       delegate.removeObject(oldestKey);
