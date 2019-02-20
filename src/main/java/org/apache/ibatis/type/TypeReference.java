@@ -19,6 +19,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
+ * 引用泛型抽象类
  * References a generic type.
  *
  * @param <T> the referenced type
@@ -34,19 +35,29 @@ public abstract class TypeReference<T> {
   }
 
   Type getSuperclassTypeParameter(Class<?> clazz) {
+    //1. 从父类中获取
     Type genericSuperclass = clazz.getGenericSuperclass();
     if (genericSuperclass instanceof Class) {
+      // 能满足这个条件的，例如 GenericTypeSupportedInHierarchiesTestCase.CustomStringTypeHandler 这个类
       // try to climb up the hierarchy until meet something useful
-      if (TypeReference.class != genericSuperclass) {
+      if (TypeReference.class != genericSuperclass) {// 排除 TypeReference 类
         return getSuperclassTypeParameter(clazz.getSuperclass());
       }
 
       throw new TypeException("'" + getClass() + "' extends TypeReference but misses the type parameter. "
         + "Remove the extension or add a type parameter to it.");
     }
-
+    //2. 获取 T   getActualTypeArguments 可以获得父类的泛型类型
     Type rawType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
     // TODO remove this when Reflector is fixed to return Types
+    /**
+     * 必须是范型，才获取 <T>   ParameterizedType 是记录泛型的接口，继承自Type
+     *
+     * Type[] getActualTypeArguments(); //返回泛型类型数组
+     * Type getRawType(); //返回原始类型Type
+     * Type getOwnerType(); //返回 Type 对象，表示此类型是其成员之一的类型。
+     *
+     */
     if (rawType instanceof ParameterizedType) {
       rawType = ((ParameterizedType) rawType).getRawType();
     }

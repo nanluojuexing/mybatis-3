@@ -26,12 +26,19 @@ import java.util.Map;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 未知的 TypeHandler 实现类
  * @author Clinton Begin
  */
 public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
+  /**
+   * ObjectTypeHandler 单例
+   */
   private static final ObjectTypeHandler OBJECT_TYPE_HANDLER = new ObjectTypeHandler();
 
+  /**
+   * TypeHandler注册表
+   */
   private TypeHandlerRegistry typeHandlerRegistry;
 
   public UnknownTypeHandler(TypeHandlerRegistry typeHandlerRegistry) {
@@ -41,7 +48,9 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType)
       throws SQLException {
+    // 获得参数对应的处理器
     TypeHandler handler = resolveTypeHandler(parameter, jdbcType);
+    // 使用handler设置参数
     handler.setParameter(ps, i, parameter, jdbcType);
   }
 
@@ -55,7 +64,9 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
   @Override
   public Object getNullableResult(ResultSet rs, int columnIndex)
       throws SQLException {
+    // 获得参数对应的处理器
     TypeHandler<?> handler = resolveTypeHandler(rs.getMetaData(), columnIndex);
+    // 如果找不到对应的处理器，使用 OBJECT_TYPE_HANDLER
     if (handler == null || handler instanceof UnknownTypeHandler) {
       handler = OBJECT_TYPE_HANDLER;
     }
@@ -70,11 +81,14 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
   private TypeHandler<? extends Object> resolveTypeHandler(Object parameter, JdbcType jdbcType) {
     TypeHandler<? extends Object> handler;
+    // 参数返回为空, 返回 OBJECT_TYPE_HANDLER
     if (parameter == null) {
       handler = OBJECT_TYPE_HANDLER;
     } else {
+      // 参数非空，使用参数类型获取对应的 TypeHandler
       handler = typeHandlerRegistry.getTypeHandler(parameter.getClass(), jdbcType);
       // check if handler is null (issue #270)
+      // 获取不到用 OBJECT_TYPE_HANDLER
       if (handler == null || handler instanceof UnknownTypeHandler) {
         handler = OBJECT_TYPE_HANDLER;
       }

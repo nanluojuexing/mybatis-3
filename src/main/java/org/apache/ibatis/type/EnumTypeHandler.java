@@ -21,10 +21,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * Enum.name <=> String
  * @author Clinton Begin
  */
 public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
+  /**
+   * 枚举类
+   */
   private final Class<E> type;
 
   public EnumTypeHandler(Class<E> type) {
@@ -36,6 +40,7 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
+    // 将Enum转换为String
     if (jdbcType == null) {
       ps.setString(i, parameter.name());
     } else {
