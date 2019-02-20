@@ -33,10 +33,14 @@ import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 类型与别名的注册表
  * @author Clinton Begin
  */
 public class TypeAliasRegistry {
 
+  /**
+   * 类型与别名的映射
+   */
   private final Map<String, Class<?>> TYPE_ALIASES = new HashMap<>();
 
   public TypeAliasRegistry() {
