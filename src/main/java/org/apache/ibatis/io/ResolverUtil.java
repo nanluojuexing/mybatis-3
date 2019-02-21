@@ -63,6 +63,7 @@ public class ResolverUtil<T> {
   private static final Log log = LogFactory.getLog(ResolverUtil.class);
 
   /**
+   * 匹配判断接口
    * A simple interface that specifies how to test classes to determine if they
    * are to be included in the results produced by the ResolverUtil.
    */
@@ -75,6 +76,8 @@ public class ResolverUtil<T> {
   }
 
   /**
+   * 检测是否继承了指定的类或接口
+   *
    * A Test that checks to see if each class is assignable to the provided class. Note
    * that this test will match the parent type itself if it is presented for matching.
    */
@@ -87,6 +90,7 @@ public class ResolverUtil<T> {
     }
 
     /** Returns true if type is assignable to the parent type supplied in the constructor. */
+    // type是带检测的类。如果检测符合条件返回 true,否则返回false
     @Override
     public boolean matches(Class<?> type) {
       return type != null && parent.isAssignableFrom(type);
@@ -99,6 +103,7 @@ public class ResolverUtil<T> {
   }
 
   /**
+   * 判断是否有指定的注解
    * A Test that checks to see if each class is annotated with a specific annotation. If it
    * is, then the test returns true, otherwise false.
    */
@@ -162,6 +167,8 @@ public class ResolverUtil<T> {
   }
 
   /**
+   * 判断指定目录下们，符合指定类的类们
+   *
    * Attempts to discover classes that are assignable to the type provided. In the case
    * that an interface is provided this method will collect implementations. In the case
    * of a non-interface class, subclasses will be collected.  Accumulated classes can be
@@ -184,6 +191,8 @@ public class ResolverUtil<T> {
   }
 
   /**
+   * 判断指定目录下们，符合指定注解的类们
+   *
    * Attempts to discover classes that are annotated with the annotation. Accumulated
    * classes can be accessed by calling {@link #getClasses()}.
    *
@@ -204,6 +213,8 @@ public class ResolverUtil<T> {
   }
 
   /**
+   * 获得指定包下，符合条件的类
+   *
    * Scans for classes starting at the package provided and descending into subpackages.
    * Each class is offered up to the Test as it is discovered, and if the Test returns
    * true the class is retained.  Accumulated classes can be fetched by calling
@@ -214,12 +225,15 @@ public class ResolverUtil<T> {
    *        classes, e.g. {@code net.sourceforge.stripes}
    */
   public ResolverUtil<T> find(Test test, String packageName) {
+    // 获得包路径
     String path = getPackagePath(packageName);
 
     try {
+      // 获得路径下的所有文件
       List<String> children = VFS.getInstance().list(path);
       for (String child : children) {
         if (child.endsWith(".class")) {
+          // 结果匹配，添加到集合
           addIfMatching(test, child);
         }
       }
@@ -250,13 +264,15 @@ public class ResolverUtil<T> {
   @SuppressWarnings("unchecked")
   protected void addIfMatching(Test test, String fqn) {
     try {
+      // 获得全类名
       String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
       ClassLoader loader = getClassLoader();
       if (log.isDebugEnabled()) {
         log.debug("Checking to see if class " + externalName + " matches criteria [" + test + "]");
       }
-
+      // 加载类
       Class<?> type = loader.loadClass(externalName);
+      // 判断是否匹配
       if (test.matches(type)) {
         matches.add((Class<T>) type);
       }

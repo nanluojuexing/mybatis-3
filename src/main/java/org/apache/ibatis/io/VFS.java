@@ -28,6 +28,7 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * 虚拟文件的抽象类 查找指定路径下的文件
  * Provides a very simple API for accessing resources within an application server.
  *
  * @author Ben Gunter
@@ -35,13 +36,20 @@ import org.apache.ibatis.logging.LogFactory;
 public abstract class VFS {
   private static final Log log = LogFactory.getLog(VFS.class);
 
+  /**
+   * 实现类的数组
+   */
   /** The built-in implementations. */
   public static final Class<?>[] IMPLEMENTATIONS = { JBoss6VFS.class, DefaultVFS.class };
 
+  // 自定义的 VFS 实现类的数组
   /** The list to which implementations are added by {@link #addImplClass(Class)}. */
   public static final List<Class<? extends VFS>> USER_IMPLEMENTATIONS = new ArrayList<>();
 
-  /** Singleton instance holder. */
+  /**
+   * Singleton instance holder.
+   * 静态内部类的方式实现延迟加载，通过类加载机制保证只创建一个对象
+   * */
   private static class VFSHolder {
     static final VFS INSTANCE = createVFS();
 
@@ -53,6 +61,7 @@ public abstract class VFS {
       impls.addAll(Arrays.asList((Class<? extends VFS>[]) IMPLEMENTATIONS));
 
       // Try each implementation class until a valid one is found
+      // 这里遍历完，获得的是最后一个符合条件的 vfs
       VFS vfs = null;
       for (int i = 0; vfs == null || !vfs.isValid(); i++) {
         Class<? extends VFS> impl = impls.get(i);
@@ -82,6 +91,10 @@ public abstract class VFS {
   }
 
   /**
+   * 获得单例
+   *
+   * 懒汉式
+   *
    * Get the singleton {@link VFS} instance. If no {@link VFS} implementation can be found for the
    * current environment, then this method returns null.
    */
@@ -163,6 +176,7 @@ public abstract class VFS {
   }
 
   /**
+   * 获得指定路径下的url数组
    * Get a list of {@link URL}s from the context classloader for all the resources found at the
    * specified path.
    *
@@ -190,6 +204,7 @@ public abstract class VFS {
   protected abstract List<String> list(URL url, String forPath) throws IOException;
 
   /**
+   * 获得指定路径下的资源
    * Recursively list the full resource path of all the resources that are children of all the
    * resources found at the specified path.
    *

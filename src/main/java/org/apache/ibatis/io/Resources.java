@@ -32,9 +32,13 @@ import java.util.Properties;
  */
 public class Resources {
 
+  /**
+   * classLoaderWrapper对象
+   */
   private static ClassLoaderWrapper classLoaderWrapper = new ClassLoaderWrapper();
 
   /**
+   * 字符集
    * Charset to use when calling getResourceAsReader.
    * null means use the system default.
    */
@@ -62,6 +66,7 @@ public class Resources {
   }
 
   /**
+   * 获得指定资源的url
    * Returns the URL of the resource on the classpath
    *
    * @param resource The resource to find
@@ -90,6 +95,8 @@ public class Resources {
   }
 
   /**
+   * 指定资源的 InputStream
+   *
    * Returns a resource on the classpath as a Stream object
    *
    * @param resource The resource to find
@@ -148,6 +155,8 @@ public class Resources {
   }
 
   /**
+   * 指定资源的 Reader
+   *
    * Returns a resource on the classpath as a Reader object
    *
    * @param resource The resource to find
@@ -183,6 +192,8 @@ public class Resources {
   }
 
   /**
+   * 指定资源的 File
+   *
    * Returns a resource on the classpath as a File object
    *
    * @param resource The resource to find
@@ -206,6 +217,7 @@ public class Resources {
   }
 
   /**
+   * 获得指定的url
    * Gets a URL as an input stream
    *
    * @param urlString - the URL to get
@@ -214,11 +226,13 @@ public class Resources {
    */
   public static InputStream getUrlAsStream(String urlString) throws IOException {
     URL url = new URL(urlString);
+    // 打开urlconnection
     URLConnection conn = url.openConnection();
     return conn.getInputStream();
   }
 
   /**
+   * 指定url的reader
    * Gets a URL as a Reader
    *
    * @param urlString - the URL to get
@@ -236,6 +250,8 @@ public class Resources {
   }
 
   /**
+   * 指定url资源的 Properties
+   *
    * Gets a URL as a Properties object
    *
    * @param urlString - the URL to get
@@ -251,6 +267,7 @@ public class Resources {
   }
 
   /**
+   * 指定类名对应的类
    * Loads a class
    *
    * @param className - the class to fetch

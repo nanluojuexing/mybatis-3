@@ -35,6 +35,7 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * vfs 的默认实现
  * A default implementation of {@link VFS} that works for most application servers.
  *
  * @author Ben Gunter
@@ -50,6 +51,13 @@ public class DefaultVFS extends VFS {
     return true;
   }
 
+  /**
+   * 递归获得所有的资源
+   * @param url The URL that identifies the resource to list.
+   * @param path
+   * @return
+   * @throws IOException
+   */
   @Override
   public List<String> list(URL url, String path) throws IOException {
     InputStream is = null;
