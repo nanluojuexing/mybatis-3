@@ -27,14 +27,28 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ *
+ * 实现 InvocationHandler、Serializable 接口，Mapper Proxy 。关键是 java.lang.reflect.InvocationHandler 接口
+ * 基于jdk的动态代理
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private static final long serialVersionUID = -6424540398559729838L;
+  /**
+   * sqlsession对象
+   */
   private final SqlSession sqlSession;
+  /**
+   * mapper接口
+   */
   private final Class<T> mapperInterface;
+  /**
+   * 方法与 mapperMethod的映射
+   * 从 {@link MapperProxyFactory#methodCache} 传递过来
+   */
   private final Map<Method, MapperMethod> methodCache;
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
@@ -46,15 +60,20 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // 1. 如果是object定义的方法，直接调用
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
+        // 见 https://github.com/mybatis/mybatis-3/issues/709 ，支持 JDK8 default 方法
       } else if (isDefaultMethod(method)) {
+        // 反射调用
         return invokeDefaultMethod(proxy, method, args);
       }
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    // 获得mapperMethod对象
     final MapperMethod mapperMethod = cachedMapperMethod(method);
+    // 执行mapperMethod对象
     return mapperMethod.execute(sqlSession, args);
   }
 

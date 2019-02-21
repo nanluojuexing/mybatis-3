@@ -39,6 +39,10 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ *
+ * mapper 方法
+ *    在 Mapper 接口中，每个定义的方法，对应一个 MapperMethod 对象
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
@@ -46,7 +50,13 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperMethod {
 
+  /**
+   * sqlCommand 对象
+   */
   private final SqlCommand command;
+  /**
+   * methodSignature对象
+   */
   private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
@@ -216,6 +226,9 @@ public class MapperMethod {
 
   }
 
+  /**
+   * 静态内部类，sql命令
+   */
   public static class SqlCommand {
 
     private final String name;
