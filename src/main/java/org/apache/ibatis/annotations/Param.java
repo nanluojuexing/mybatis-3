@@ -22,6 +22,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 参数注解
+ *    映射多个参数的时候，这个注解可以被应用于映射器方法参数来给每一个参数一个名字，否则多参数将会以顺序位置来被命名
  * @author Clinton Begin
  */
 @Documented

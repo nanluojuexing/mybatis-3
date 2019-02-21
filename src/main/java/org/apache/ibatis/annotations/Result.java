@@ -25,25 +25,51 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.UnknownTypeHandler;
 
 /**
+ * 结果字段的注解
  * @author Clinton Begin
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface Result {
+
+  /**
+   * @return 是否是 ID 字段
+   */
   boolean id() default false;
 
-  String column() default "";
-
+  /**
+   * @return Java 类中的属性
+   */
   String property() default "";
 
+  /**
+   * @return 数据库的字段
+   */
+  String column() default "";
+
+  /**
+   * @return Java Type
+   */
   Class<?> javaType() default void.class;
 
+  /**
+   * @return JDBC Type
+   */
   JdbcType jdbcType() default JdbcType.UNDEFINED;
 
+  /**
+   * @return 使用的 TypeHandler 处理器
+   */
   Class<? extends TypeHandler> typeHandler() default UnknownTypeHandler.class;
 
+  /**
+   * @return {@link One} 注解
+   */
   One one() default @One;
 
+  /**
+   * @return {@link Many} 注解
+   */
   Many many() default @Many;
 }

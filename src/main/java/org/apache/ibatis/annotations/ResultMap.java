@@ -22,6 +22,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 使用结果集的注解
+ *
  * @author Jeff Butler
  */
 @Documented

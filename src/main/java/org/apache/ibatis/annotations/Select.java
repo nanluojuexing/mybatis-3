@@ -22,6 +22,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 查询语句注解
+ * 示例：
+ *    @Select("select *from User where id=#{idss}")
+ *
  * @author Clinton Begin
  */
 @Documented

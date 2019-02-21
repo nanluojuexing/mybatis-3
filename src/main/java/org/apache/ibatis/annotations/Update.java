@@ -22,6 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 更新语句注解
+ *  示例：
+ *
  * @author Clinton Begin
  */
 @Documented

@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * map结果的键的注解
  * @author Clinton Begin
  */
 @Documented

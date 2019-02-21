@@ -22,6 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 插入语句注解
+ *  示例：
+ *     @Insert("INSERT INTO user(userName,userAge,userAddress) VALUES(#{userName},#{userAge},#{userAddress})")
+ *     public void addNewUser(User user);
+ *
  * @author Clinton Begin
  */
 @Documented

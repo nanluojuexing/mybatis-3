@@ -22,6 +22,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 删除语句注解
+ *  示例：
+ *     @Delete("delete from user where id=#{id}")
+ *     public void deleteUser(int id);
  * @author Clinton Begin
  */
 @Documented

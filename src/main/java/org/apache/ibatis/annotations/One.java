@@ -23,14 +23,24 @@ import java.lang.annotation.Target;
 import org.apache.ibatis.mapping.FetchType;
 
 /**
+ * 复杂类型的单独属性值的注解
+ *
  * @author Clinton Begin
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface One {
+  /**
+   * 已经映射的语句的全限定名
+   * @return
+   */
   String select() default "";
 
+  /**
+   * 加载类型
+   * @return
+   */
   FetchType fetchType() default FetchType.DEFAULT;
 
 }
