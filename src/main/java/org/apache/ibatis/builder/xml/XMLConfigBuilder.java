@@ -53,9 +53,21 @@ import org.apache.ibatis.type.JdbcType;
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
+  /**
+   * 是否已解析
+   */
   private boolean parsed;
+  /**
+   * 基于 java xpath 的解析器
+   */
   private final XPathParser parser;
+  /**
+   * 环境
+   */
   private String environment;
+  /**
+   * ReflectorFactory 对象   用于创建和缓存reflector对象
+   */
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
 
   public XMLConfigBuilder(Reader reader) {
@@ -83,19 +95,28 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+    // 1. 创建 Configuration 对象
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
+    //2. 设置 variables属性
     this.configuration.setVariables(props);
     this.parsed = false;
     this.environment = environment;
     this.parser = parser;
   }
 
+  /**
+   * 解析 xml为configuration对象
+   * @return
+   */
   public Configuration parse() {
+    // 1.判断是否已经解析
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
+    // 2.标记已经解析
     parsed = true;
+    // 3.解析xml中 configuration节点  parser.evalNode 获得该节点
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
@@ -107,20 +128,32 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+      // <1> 解析 <properties /> 标签
       propertiesElement(root.evalNode("properties"));
+      // <2> 解析 <settings /> 标签
       Properties settings = settingsAsProperties(root.evalNode("settings"));
+      // <3> 加载自定义 VFS 实现类
       loadCustomVfs(settings);
-      loadCustomLogImpl(settings);
+      // <4> 解析 <typeAliases /> 标签
       typeAliasesElement(root.evalNode("typeAliases"));
+      // <5> 解析 <plugins /> 标签
       pluginElement(root.evalNode("plugins"));
+      // <6> 解析 <objectFactory /> 标签
       objectFactoryElement(root.evalNode("objectFactory"));
+      // <7> 解析 <objectWrapperFactory /> 标签
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+      // <8> 解析 <reflectorFactory /> 标签
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+      // <9> 赋值 <settings /> 到 Configuration 属性
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      // <10> 解析 <environments /> 标签
       environmentsElement(root.evalNode("environments"));
+      // <11> 解析 <databaseIdProvider /> 标签
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      // <12> 解析 <typeHandlers /> 标签
       typeHandlerElement(root.evalNode("typeHandlers"));
+      // <13> 解析 <mappers /> 标签
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -223,6 +256,11 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * <1>
+   * @param context
+   * @throws Exception
+   */
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
       Properties defaults = context.getChildrenAsProperties();
