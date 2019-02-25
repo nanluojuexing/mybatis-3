@@ -26,6 +26,7 @@ import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 
 /**
+ * mybtais 初始化流程的入口
  * Builds {@link SqlSession} instances.
  *
  * @author Clinton Begin
@@ -44,9 +45,18 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+  /**
+   * 构建 SqlSessionFactory对象
+   * @param reader reader对象
+   * @param environment 环境
+   * @param properties 变量
+   * @return
+   */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
+      // 1。构建 xmlConfigBuilder对象
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+      // 2.解析xml,创建 DefaultSqlSessionFactory
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
