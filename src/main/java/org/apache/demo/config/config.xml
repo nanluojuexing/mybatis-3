@@ -29,7 +29,7 @@
   </settings>
 
   <typeAliases>
-    <typeAlias alias="Mail" type="org.apache.ibatis.demo.pojo.Mail"/>
+    <typeAlias alias="Mail" type="org.apache.demo.pojo.Mail"/>
   </typeAliases>
 
   <environments default="development">
@@ -45,7 +45,7 @@
   </environments>
 
   <mappers>
-    <mapper resource="org/apache/ibatis/demo/config/mail.xml"/>
+    <mapper resource="org/apache/demo/config/mail.xml"/>
   </mappers>
 
 </configuration>

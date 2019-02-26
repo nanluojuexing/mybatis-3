@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.demo.dao;
+package org.apache.demo.dao;
 
-import org.apache.ibatis.demo.pojo.Mail;
+import org.apache.demo.pojo.Mail;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -40,7 +40,7 @@ public class MailDaoImpl implements MailDao {
     static {
         try {
             // 将路径转为字符输入流 对象返回
-            reader = Resources.getResourceAsReader("org/apache/ibatis/demo/config/config.xml");
+            reader = Resources.getResourceAsReader("org/apache/demo/config/config.xml");
             // 解析xml，对应数据
             ssf = new SqlSessionFactoryBuilder().build(reader);
         }

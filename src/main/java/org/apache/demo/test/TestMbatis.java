@@ -13,11 +13,11 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.demo.test;
+package org.apache.demo.test;
 
-import org.apache.ibatis.demo.dao.MailDao;
-import org.apache.ibatis.demo.dao.MailDaoImpl;
-import org.apache.ibatis.demo.pojo.Mail;
+import org.apache.demo.dao.MailDao;
+import org.apache.demo.dao.MailDaoImpl;
+import org.apache.demo.pojo.Mail;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

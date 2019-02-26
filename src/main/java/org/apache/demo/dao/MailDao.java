@@ -13,12 +13,11 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.demo.dao;
+package org.apache.demo.dao;
 
 
-import org.apache.ibatis.demo.pojo.Mail;
+import org.apache.demo.pojo.Mail;
 
-import java.util.Date;
 import java.util.List;
 
 /**
