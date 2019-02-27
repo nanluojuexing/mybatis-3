@@ -182,13 +182,17 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private void loadCustomVfs(Properties props) throws ClassNotFoundException {
+    //获得对应的 vfsImpl属性
     String value = props.getProperty("vfsImpl");
     if (value != null) {
+      // 使用 , 作为分隔符，拆成 VFS 类名的数组
       String[] clazzes = value.split(",");
       for (String clazz : clazzes) {
         if (!clazz.isEmpty()) {
           @SuppressWarnings("unchecked")
+                  // 获得vfs类
           Class<? extends VFS> vfsImpl = (Class<? extends VFS>)Resources.classForName(clazz);
+          // 设置到configuration中
           configuration.setVfsImpl(vfsImpl);
         }
       }
@@ -200,13 +204,20 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setLogImpl(logImpl);
   }
 
+  /**
+   *  <typeAliases /> 标签，将配置类注册到 typeAliasRegistry 中
+   * @param parent
+   */
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
+      // 遍历子节点
       for (XNode child : parent.getChildren()) {
+        // 指定包的情况下，注册包下的每一个类
         if ("package".equals(child.getName())) {
           String typeAliasPackage = child.getStringAttribute("name");
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
+          // 指定为类的情况下，指定注册类和别名
           String alias = child.getStringAttribute("alias");
           String type = child.getStringAttribute("type");
           try {
@@ -224,13 +235,20 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   *  <plugins /> 标签，添加到 Configuration#interceptorChain 中
+   * @param parent
+   * @throws Exception
+   */
   private void pluginElement(XNode parent) throws Exception {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
         String interceptor = child.getStringAttribute("interceptor");
         Properties properties = child.getChildrenAsProperties();
+        // <1> 创建 Interceptor 对象，并设置属性
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
         interceptorInstance.setProperties(properties);
+        // <2> 添加到 configuration 中
         configuration.addInterceptor(interceptorInstance);
       }
     }
