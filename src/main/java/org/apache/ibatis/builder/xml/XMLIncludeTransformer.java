@@ -30,6 +30,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * xml 文件 <include> 标签的转换器 负责将 SQL 中的 <include /> 标签转换成对应的 <sql /> 的内容
  * @author Frank D. Martinez [mnesarco]
  */
 public class XMLIncludeTransformer {
@@ -43,33 +44,61 @@ public class XMLIncludeTransformer {
   }
 
   public void applyIncludes(Node source) {
+    // 创建 varibalesContext ,并将configurationVariables 添加到其中
     Properties variablesContext = new Properties();
     Properties configurationVariables = configuration.getVariables();
     if (configurationVariables != null) {
       variablesContext.putAll(configurationVariables);
     }
+    // 处理 include
     applyIncludes(source, variablesContext, false);
   }
 
   /**
+   * 递归替换
+   *
+   * // Mapper.xml
+   *
+   * <sql id="someinclude"">
+   *    from ${tablename}
+   * </sql>
+   *
+   * <select id="countAll" resultType="int">
+   *     SELECT B.id as blog_id,B.title as blog_title , B.author_id as blog_author_id
+   *     <include refid="${someinclude}" >
+   *          <properties>
+   *              <property name="tablename" value="Blog" />
+   *          </properties>
+   *     </include>
+   * </select>
+   *
    * Recursively apply includes through all SQL fragments.
    * @param source Include node in DOM tree
    * @param variablesContext Current context for static variables with values
    */
   private void applyIncludes(Node source, final Properties variablesContext, boolean included) {
+    // 判断是 include标签
     if (source.getNodeName().equals("include")) {
+      // 获得 <sql> 对应的节点
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
+      // 获得包含 <include> 标签内的属性，形成新的 properties对象返回，用于替换占位符
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
+      // 递归调用 ，继续替换，此处是 <sql>对应的节点，这里可能会使用 include引用其他的标签
       applyIncludes(toInclude, toIncludeContext, true);
       if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
         toInclude = source.getOwnerDocument().importNode(toInclude, true);
       }
+      // 将 <include> 节点替换为 <sql>节点
       source.getParentNode().replaceChild(toInclude, source);
+      // 将 <sql> 节点的子节点添加到 <sql> 节点前面
       while (toInclude.hasChildNodes()) {
         toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);
       }
+      // 删除 <sql> 节点
       toInclude.getParentNode().removeChild(toInclude);
+      // 如果当前节点类型为 Node.ELEMENT_NODE
     } else if (source.getNodeType() == Node.ELEMENT_NODE) {
+      // 如果在处理 <include /> 标签中，则替换其上的属性，例如 <sql id="123" lang="${cpu}"> 的情况，lang 属性是可以被替换的
       if (included && !variablesContext.isEmpty()) {
         // replace variables in attribute values
         NamedNodeMap attributes = source.getAttributes();
@@ -78,10 +107,13 @@ public class XMLIncludeTransformer {
           attr.setNodeValue(PropertyParser.parse(attr.getNodeValue(), variablesContext));
         }
       }
+      // 遍历子节点 递归调用
       NodeList children = source.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         applyIncludes(children.item(i), variablesContext, included);
       }
+      // <3> 如果在处理 <include /> 标签中，并且节点类型为 Node.TEXT_NODE ，并且变量非空
+      // 则进行变量的替换，并修改原节点 source
     } else if (included && source.getNodeType() == Node.TEXT_NODE
         && !variablesContext.isEmpty()) {
       // replace variables in text node

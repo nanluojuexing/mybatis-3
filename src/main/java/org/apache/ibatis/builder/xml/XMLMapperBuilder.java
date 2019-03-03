@@ -162,7 +162,7 @@ public class XMLMapperBuilder extends BaseBuilder {
    * @param list
    */
   private void buildStatementFromContext(List<XNode> list) {
-    // 这里可以合并两句代码
+    // 这里可以合并两句代码  buildStatementFromContext(list, configuration.getDatabaseId());
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }

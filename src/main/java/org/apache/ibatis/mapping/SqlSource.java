@@ -16,6 +16,7 @@
 package org.apache.ibatis.mapping;
 
 /**
+ * 映射文件或注解中定义 的sql语句，这里表示的sql语句不能直接被数据库执行，其中可能包含动态sql语句或者占位符等需要解析的元素
  * Represents the content of a mapped statement read from an XML file or an annotation.
  * It creates the SQL that will be passed to the database out of the input parameter received from the user.
  *

@@ -33,6 +33,9 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class MappedStatement {
 
+  /**
+   * 节点中的id属性
+   */
   private String resource;
   private Configuration configuration;
   private String id;
@@ -40,6 +43,9 @@ public final class MappedStatement {
   private Integer timeout;
   private StatementType statementType;
   private ResultSetType resultSetType;
+  /**
+   * sqlSource对象，对应一条sql语句
+   */
   private SqlSource sqlSource;
   private Cache cache;
   private ParameterMap parameterMap;
@@ -47,6 +53,9 @@ public final class MappedStatement {
   private boolean flushCacheRequired;
   private boolean useCache;
   private boolean resultOrdered;
+  /**
+   * SQL的类型
+   */
   private SqlCommandType sqlCommandType;
   private KeyGenerator keyGenerator;
   private String[] keyProperties;
