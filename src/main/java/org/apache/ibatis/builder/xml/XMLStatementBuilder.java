@@ -133,24 +133,39 @@ public class XMLStatementBuilder extends BaseBuilder {
   }
 
   private void processSelectKeyNodes(String id, Class<?> parameterTypeClass, LanguageDriver langDriver) {
+    //获得 <selectkey> 节点
     List<XNode> selectKeyNodes = context.evalNodes("selectKey");
+    // 执行解析selectKey节点
     if (configuration.getDatabaseId() != null) {
       parseSelectKeyNodes(id, selectKeyNodes, parameterTypeClass, langDriver, configuration.getDatabaseId());
     }
     parseSelectKeyNodes(id, selectKeyNodes, parameterTypeClass, langDriver, null);
+    // 移除 <selectKey /> 节点们
     removeSelectKeyNodes(selectKeyNodes);
   }
 
   private void parseSelectKeyNodes(String parentId, List<XNode> list, Class<?> parameterTypeClass, LanguageDriver langDriver, String skRequiredDatabaseId) {
+    // <1> 遍历 <selectKey /> 节点们
     for (XNode nodeToHandle : list) {
+      // <2> 获得完整 id ，格式为 `${id}!selectKey`
       String id = parentId + SelectKeyGenerator.SELECT_KEY_SUFFIX;
+      // <3> 获得 databaseId ， 判断 databaseId 是否匹配
       String databaseId = nodeToHandle.getStringAttribute("databaseId");
       if (databaseIdMatchesCurrent(id, databaseId, skRequiredDatabaseId)) {
+        // <4> 执行解析单个 <selectKey /> 节点
         parseSelectKeyNode(id, nodeToHandle, parameterTypeClass, langDriver, databaseId);
       }
     }
   }
 
+  /**
+   * 解析单个 <selectKey>
+   * @param id
+   * @param nodeToHandle
+   * @param parameterTypeClass
+   * @param langDriver
+   * @param databaseId
+   */
   private void parseSelectKeyNode(String id, XNode nodeToHandle, Class<?> parameterTypeClass, LanguageDriver langDriver, String databaseId) {
     String resultType = nodeToHandle.getStringAttribute("resultType");
     Class<?> resultTypeClass = resolveClass(resultType);
@@ -159,6 +174,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     String keyColumn = nodeToHandle.getStringAttribute("keyColumn");
     boolean executeBefore = "BEFORE".equals(nodeToHandle.getStringAttribute("order", "AFTER"));
 
+    // 创建 MappedStatement 需要的默认值
     //defaults
     boolean useCache = false;
     boolean resultOrdered = false;
@@ -170,6 +186,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     String resultMap = null;
     ResultSetType resultSetTypeEnum = null;
 
+    // 创建sqlSource对象
     SqlSource sqlSource = langDriver.createSqlSource(configuration, nodeToHandle, parameterTypeClass);
     SqlCommandType sqlCommandType = SqlCommandType.SELECT;
 
@@ -178,9 +195,11 @@ public class XMLStatementBuilder extends BaseBuilder {
         resultSetTypeEnum, flushCache, useCache, resultOrdered,
         keyGenerator, keyProperty, keyColumn, databaseId, langDriver, null);
 
+    // <2.1> 获得 SelectKeyGenerator 的编号，格式为 `${namespace}.${id}`
     id = builderAssistant.applyCurrentNamespace(id, false);
-
+    // <2.2> 获得 MappedStatement 对象
     MappedStatement keyStatement = configuration.getMappedStatement(id, false);
+    // <2.3> 创建 SelectKeyGenerator 对象，并添加到 configuration 中
     configuration.addKeyGenerator(id, new SelectKeyGenerator(keyStatement, executeBefore));
   }
 
@@ -190,19 +209,31 @@ public class XMLStatementBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 判断databaseId是否匹配
+   * @param id
+   * @param databaseId
+   * @param requiredDatabaseId
+   * @return
+   */
   private boolean databaseIdMatchesCurrent(String id, String databaseId, String requiredDatabaseId) {
+    // 如果不匹配，则返回 false
     if (requiredDatabaseId != null) {
       if (!requiredDatabaseId.equals(databaseId)) {
         return false;
       }
     } else {
+      /// 如果未设置 requiredDatabaseId ，但是databaseId 存在，说明还是不匹配，则返回 false
       if (databaseId != null) {
         return false;
       }
       // skip this statement if there is a previous one with a not null databaseId
+      // 判断id 是否已经存在
+
       id = builderAssistant.applyCurrentNamespace(id, false);
       if (this.configuration.hasStatement(id, false)) {
         MappedStatement previous = this.configuration.getMappedStatement(id, false); // issue #2
+        // 若存在，则判断原有的 sqlFragment 是否 databaseId 为空。因为，当前 databaseId 为空，这样两者才能匹配。
         if (previous.getDatabaseId() != null) {
           return false;
         }

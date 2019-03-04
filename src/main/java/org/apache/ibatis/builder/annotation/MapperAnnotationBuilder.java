@@ -92,12 +92,19 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.UnknownTypeHandler;
 
 /**
+ * mapper注解构造器 负责解析mapper 接口上的注解
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public class MapperAnnotationBuilder {
 
+  /**
+   * sql操作注解集合
+   */
   private static final Set<Class<? extends Annotation>> SQL_ANNOTATION_TYPES = new HashSet<>();
+  /**
+   * sql操作提供者注解集合
+   */
   private static final Set<Class<? extends Annotation>> SQL_PROVIDER_ANNOTATION_TYPES = new HashSet<>();
 
   private final Configuration configuration;
@@ -123,6 +130,9 @@ public class MapperAnnotationBuilder {
     this.type = type;
   }
 
+  /**
+   * 解析注解
+   */
   public void parse() {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {

@@ -122,10 +122,14 @@ public class XMLIncludeTransformer {
   }
 
   private Node findSqlFragment(String refid, Properties variables) {
+    // 这里 refid可能是动态变量，所以进行替换
     refid = PropertyParser.parse(refid, variables);
+    // 获得完整的 refid ，格式为 "${namespace}.${refid}"
     refid = builderAssistant.applyCurrentNamespace(refid, true);
     try {
+      //获得对应的<sql>节点
       XNode nodeToInclude = configuration.getSqlFragments().get(refid);
+      // 获得node节点，克隆
       return nodeToInclude.getNode().cloneNode(true);
     } catch (IllegalArgumentException e) {
       throw new IncompleteElementException("Could not find SQL statement to include with refid '" + refid + "'", e);
@@ -137,6 +141,7 @@ public class XMLIncludeTransformer {
   }
 
   /**
+   * 获得包含 <include /> 标签内的属性 Properties 对象
    * Read placeholders and their values from include node definition.
    * @param node Include node instance
    * @param inheritedVariablesContext Current context used for replace variables in new variables values
@@ -144,6 +149,7 @@ public class XMLIncludeTransformer {
    */
   private Properties getVariablesContext(Node node, Properties inheritedVariablesContext) {
     Map<String, String> declaredProperties = null;
+    // 获得 <include /> 标签的属性集合
     NodeList children = node.getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
       Node n = children.item(i);
@@ -154,14 +160,17 @@ public class XMLIncludeTransformer {
         if (declaredProperties == null) {
           declaredProperties = new HashMap<>();
         }
+        // 这里避免重复定义
         if (declaredProperties.put(name, value) != null) {
           throw new BuilderException("Variable " + name + " defined twice in the same include definition");
         }
       }
     }
+    // 如果 <include /> 标签内没有属性，直接使用 inheritedVariablesContext 即可
     if (declaredProperties == null) {
       return inheritedVariablesContext;
     } else {
+      // 如果 <include /> 标签内有属性，则创建新的 newProperties 集合，将 inheritedVariablesContext + declaredProperties 合并
       Properties newProperties = new Properties();
       newProperties.putAll(inheritedVariablesContext);
       newProperties.putAll(declaredProperties);

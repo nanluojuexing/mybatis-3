@@ -29,6 +29,8 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 映射的语句，每个 <select />、<insert />、<update />、<delete /> 对应一个 MappedStatement 对象
+ *
  * @author Clinton Begin
  */
 public final class MappedStatement {
@@ -302,7 +304,13 @@ public final class MappedStatement {
     return resultSets;
   }
 
+  /**
+   *  获得 boundsql对象
+   * @param parameterObject
+   * @return
+   */
   public BoundSql getBoundSql(Object parameterObject) {
+    // 获得 BoundSql 对象
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     if (parameterMappings == null || parameterMappings.isEmpty()) {
@@ -310,6 +318,7 @@ public final class MappedStatement {
     }
 
     // check for nested result maps in parameter mappings (issue #30)
+    // 判断传入的参数，是否含有内嵌的结果 resultMap 如果有，则 hasNestedResultMaps 为true
     for (ParameterMapping pm : boundSql.getParameterMappings()) {
       String rmId = pm.getResultMapId();
       if (rmId != null) {

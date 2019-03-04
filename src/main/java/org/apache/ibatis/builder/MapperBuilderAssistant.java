@@ -302,6 +302,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return new Discriminator.Builder(configuration, resultMapping, namespaceDiscriminatorMap).build();
   }
 
+  /**
+   * 构建 MappedStatement
+   */
   public MappedStatement addMappedStatement(
       String id,
       SqlSource sqlSource,
@@ -328,9 +331,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
       throw new IncompleteElementException("Cache-ref not yet resolved");
     }
 
+    //  获得 id 编号，格式为 `${namespace}.${id}`
     id = applyCurrentNamespace(id, false);
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
 
+    // 创建 MappedStatement.Builder 对象
     MappedStatement.Builder statementBuilder = new MappedStatement.Builder(configuration, id, sqlSource, sqlCommandType)
         .resource(resource)
         .fetchSize(fetchSize)
@@ -349,6 +354,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .useCache(valueOrDefault(useCache, isSelect))
         .cache(currentCache);
 
+    // 获得 ParameterMap ，并设置到 MappedStatement.Builder 中
     ParameterMap statementParameterMap = getStatementParameterMap(parameterMap, parameterType, id);
     if (statementParameterMap != null) {
       statementBuilder.parameterMap(statementParameterMap);
@@ -386,12 +392,21 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return parameterMap;
   }
 
+  /**
+   * 获得resultMap集合
+   * @param resultMap
+   * @param resultType
+   * @param statementId
+   * @return
+   */
   private List<ResultMap> getStatementResultMaps(
       String resultMap,
       Class<?> resultType,
       String statementId) {
+    // 获得 resultMap 的编号
     resultMap = applyCurrentNamespace(resultMap, true);
 
+    // 创建 ResultMap 集合
     List<ResultMap> resultMaps = new ArrayList<>();
     if (resultMap != null) {
       String[] resultMapNames = resultMap.split(",");
@@ -532,10 +547,17 @@ public class MapperBuilderAssistant extends BaseBuilder {
       nestedResultMap, notNullColumn, columnPrefix, typeHandler, flags, null, null, configuration.isLazyLoadingEnabled());
   }
 
+  /**
+   * 获得 LanguageDriver 对象
+   * @param langClass
+   * @return
+   */
   public LanguageDriver getLanguageDriver(Class<? extends LanguageDriver> langClass) {
+    // 获得 langClass
     if (langClass != null) {
       configuration.getLanguageRegistry().register(langClass);
     } else {
+      // 如果为空，则使用默认值
       langClass = configuration.getLanguageRegistry().getDefaultDriverClass();
     }
     return configuration.getLanguageRegistry().getDriver(langClass);
