@@ -16,8 +16,21 @@
 package org.apache.ibatis.scripting.xmltags;
 
 /**
+ * 这里是组合模式
+ *
+ *    sqlNode 是 抽象组件的角色
+ *      MixSqlNode 树枝节点角色
+ *      TextSqlNode 树叶节点角色
+ *
+ * 解析对应的动态 sql节点 （实现类）
  * @author Clinton Begin
  */
 public interface SqlNode {
+  /**
+   *  根据用户传入的实参，参数解析该 sqlNode所记录的动态SQL节点，并调用 DynamicContext.appendSql() 方法解析后的sql片段追加到
+   *    DynamicContext.sqlBuilder 中保存。当所有的节点解析完成后，获取动态sql
+   * @param context
+   * @return
+   */
   boolean apply(DynamicContext context);
 }

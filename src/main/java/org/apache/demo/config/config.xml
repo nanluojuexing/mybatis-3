@@ -29,6 +29,8 @@
 
   <typeAliases>
     <typeAlias alias="Mail" type="org.apache.demo.pojo.Mail"/>
+    <typeAlias alias="Class" type="org.apache.demo.pojo.Class"/>
+    <typeAlias alias="StudentEntity" type="org.apache.demo.pojo.StudentEntity"/>
   </typeAliases>
 
   <environments default="development">
@@ -45,6 +47,8 @@
 
   <mappers>
     <mapper resource="org/apache/demo/config/mail.xml"/>
+    <mapper resource="org/apache/demo/config/studentMapper.xml"/>
+    <mapper resource="org/apache/demo/config/classMapper.xml"/>
   </mappers>
 
 </configuration>

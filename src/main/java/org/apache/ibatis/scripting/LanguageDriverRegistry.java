@@ -31,6 +31,7 @@ public class LanguageDriverRegistry {
     if (cls == null) {
       throw new IllegalArgumentException("null is not a valid Language Driver");
     }
+    // 创建 cls 对应的对象，并添加到 LANGUAGE_DRIVER_MAP 中
     if (!LANGUAGE_DRIVER_MAP.containsKey(cls)) {
       try {
         LANGUAGE_DRIVER_MAP.put(cls, cls.newInstance());
@@ -44,6 +45,7 @@ public class LanguageDriverRegistry {
     if (instance == null) {
       throw new IllegalArgumentException("null is not a valid Language Driver");
     }
+    // 添加到 LANGUAGE_DRIVER_MAP 中
     Class<? extends LanguageDriver> cls = instance.getClass();
     if (!LANGUAGE_DRIVER_MAP.containsKey(cls)) {
       LANGUAGE_DRIVER_MAP.put(cls, instance);

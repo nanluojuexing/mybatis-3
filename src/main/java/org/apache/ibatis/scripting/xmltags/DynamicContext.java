@@ -26,6 +26,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 记录解析动态sql语句产生的sql片段，记录动态sql语句解析结果的容器
  * @author Clinton Begin
  */
 public class DynamicContext {
@@ -37,12 +38,24 @@ public class DynamicContext {
     OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
   }
 
+  /**
+   * 参数上下文
+   */
   private final ContextMap bindings;
+  /**
+   * 在sqlNode解析动态sql时，会将解析后的sql语句片段添加到该属性中保存，最终拼接完整可执行的sql
+   */
   private final StringBuilder sqlBuilder = new StringBuilder();
   private int uniqueNumber = 0;
 
+  /**
+   *  初始化 bindings集合
+   * @param configuration
+   * @param parameterObject  运行时用户传入的参数，后续替换#{}占位符的实参
+   */
   public DynamicContext(Configuration configuration, Object parameterObject) {
     if (parameterObject != null && !(parameterObject instanceof Map)) {
+      // 对于map类型的参数，会创建对应的metaobject类，并封装成 contextMap对象
       MetaObject metaObject = configuration.newMetaObject(parameterObject);
       bindings = new ContextMap(metaObject);
     } else {
@@ -60,11 +73,19 @@ public class DynamicContext {
     bindings.put(name, value);
   }
 
+  /**
+   * 追加动态sql片段
+   * @param sql
+   */
   public void appendSql(String sql) {
     sqlBuilder.append(sql);
     sqlBuilder.append(" ");
   }
 
+  /**
+   * 获得解析后完整的sql语句e
+   * @return
+   */
   public String getSql() {
     return sqlBuilder.toString().trim();
   }
@@ -76,6 +97,9 @@ public class DynamicContext {
   static class ContextMap extends HashMap<String, Object> {
     private static final long serialVersionUID = 2977601501966151582L;
 
+    /**
+     * 将用户传入的参数封装
+     */
     private MetaObject parameterMetaObject;
 
     public ContextMap(MetaObject parameterMetaObject) {
@@ -88,7 +112,7 @@ public class DynamicContext {
       if (super.containsKey(strKey)) {
         return super.get(strKey);
       }
-
+      // 从运行参数中茶查找对应的属性
       if (parameterMetaObject != null) {
         // issue #61 do not modify the context when reading
         return parameterMetaObject.getValue(strKey);
