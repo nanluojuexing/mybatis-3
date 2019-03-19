@@ -29,10 +29,25 @@ import org.apache.ibatis.session.Configuration;
  */
 public class TrimSqlNode implements SqlNode {
 
+  /**
+   *  内含的sqlnode 节点
+   */
   private final SqlNode contents;
+  /**
+   * 前缀
+   */
   private final String prefix;
+  /**
+   * 后缀
+   */
   private final String suffix;
+  /**
+   * 需要被删除的前缀
+   */
   private final List<String> prefixesToOverride;
+  /**
+   * 需要被删除的后缀
+   */
   private final List<String> suffixesToOverride;
   private final Configuration configuration;
 
@@ -59,6 +74,7 @@ public class TrimSqlNode implements SqlNode {
 
   private static List<String> parseOverrides(String overrides) {
     if (overrides != null) {
+      // 用 | 分隔字符串成字符串数组，并都转换成大写
       final StringTokenizer parser = new StringTokenizer(overrides, "|", false);
       final List<String> list = new ArrayList<>(parser.countTokens());
       while (parser.hasMoreTokens()) {
@@ -84,7 +100,10 @@ public class TrimSqlNode implements SqlNode {
     }
 
     public void applyAll() {
+      // 去掉多余的空格
       sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
+      // 将 sqlBuffer 大写，生成新的 trimmedUppercaseSql 对象
+      // TrimSqlNode 对 prefixesToOverride 和 suffixesToOverride 属性，都进行了大写的处理，需要保持统一。但是，又不能直接修改 sqlBuffer ，因为这样就相当于修改了原始的 SQL
       String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
       if (trimmedUppercaseSql.length() > 0) {
         applyPrefix(sqlBuffer, trimmedUppercaseSql);

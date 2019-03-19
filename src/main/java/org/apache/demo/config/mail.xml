@@ -71,7 +71,14 @@
   </select>
 
   <select id="selectMailById" resultMap="MailResultMap" parameterType="java.lang.Long">
-    select <include refid="fields" /> from mail where id = #{id};
+    select <include refid="fields" /> from mail
+    <where>
+      <choose>
+        <when test="id != null">
+          id = #{id}
+        </when>
+      </choose>
+    </where>
   </select>
 
 </mapper>

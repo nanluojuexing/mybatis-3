@@ -31,10 +31,17 @@ import org.apache.ibatis.session.Configuration;
  */
 public class DynamicContext {
 
+  /**
+   * {@link #bindings} _parameter 的键，参数
+   */
   public static final String PARAMETER_OBJECT_KEY = "_parameter";
+  /**
+   * {@link #bindings} _databaseId 的键，数据库编号
+   */
   public static final String DATABASE_ID_KEY = "_databaseId";
 
   static {
+    // 初始化ognl的属性访问器
     OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
   }
 
@@ -94,6 +101,11 @@ public class DynamicContext {
     return uniqueNumber++;
   }
 
+  /**
+   * 上下文的参数集合
+   *
+   * 增加支持对 parameterMetaObject 属性的访问
+   */
   static class ContextMap extends HashMap<String, Object> {
     private static final long serialVersionUID = 2977601501966151582L;
 
@@ -108,6 +120,7 @@ public class DynamicContext {
 
     @Override
     public Object get(Object key) {
+      // 如果有对应的key,直接获得
       String strKey = (String) key;
       if (super.containsKey(strKey)) {
         return super.get(strKey);
@@ -122,6 +135,9 @@ public class DynamicContext {
     }
   }
 
+  /**
+   * 上下文接口访问器
+   */
   static class ContextAccessor implements PropertyAccessor {
 
     @Override

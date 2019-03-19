@@ -3,7 +3,7 @@ package org.apache.demo.dao;
 import org.apache.demo.pojo.StudentEntity;
 import org.apache.ibatis.annotations.Param;
 
-public class StudentMapper {
+public interface StudentMapper {
 
     public StudentEntity getStudentById(int id);
 

@@ -21,12 +21,16 @@ import org.apache.ibatis.parsing.GenericTokenParser;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * <foreach /> 标签的 SqlNode 实现类
  * @author Clinton Begin
  */
 public class ForEachSqlNode implements SqlNode {
   public static final String ITEM_PREFIX = "__frch_";
 
   private final ExpressionEvaluator evaluator;
+  /**
+   * 集合表达式
+   */
   private final String collectionExpression;
   private final SqlNode contents;
   private final String open;
@@ -51,11 +55,13 @@ public class ForEachSqlNode implements SqlNode {
   @Override
   public boolean apply(DynamicContext context) {
     Map<String, Object> bindings = context.getBindings();
+    //获取用于遍历的集合对象
     final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings);
     if (!iterable.iterator().hasNext()) {
       return true;
     }
     boolean first = true;
+    // 添加open到sql 中
     applyOpen(context);
     int i = 0;
     for (Object o : iterable) {
