@@ -18,6 +18,8 @@ package org.apache.ibatis.builder;
 import java.util.HashMap;
 
 /**
+ * 负责参数表达式
+ *
  * Inline parameter expression parser. Supported grammar (simplified):
  *
  * <pre>
