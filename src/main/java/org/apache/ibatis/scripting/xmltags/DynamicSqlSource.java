@@ -23,7 +23,7 @@ import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
 
 /**
- * 负责动态处理sql
+ * 动态sqlSource的实现类
  * @author Clinton Begin
  */
 public class DynamicSqlSource implements SqlSource {
@@ -38,12 +38,18 @@ public class DynamicSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
+    // 应用rootSqlNode
     DynamicContext context = new DynamicContext(configuration, parameterObject);
+    // 这里 组合设计模式 每个sqlNode 的apply()方法都能将解析的sql语句片段追加到context
     rootSqlNode.apply(context);
+    // 创建SqlSourceBuilder
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
+    // 解析出 sqlSource 对象 instanceOf  staticSqlSource
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
     SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
+    // 获得 boundSql
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
+    // <4> 添加附加参数到 BoundSql 对象中
     for (Map.Entry<String, Object> entry : context.getBindings().entrySet()) {
       boundSql.setAdditionalParameter(entry.getKey(), entry.getValue());
     }
