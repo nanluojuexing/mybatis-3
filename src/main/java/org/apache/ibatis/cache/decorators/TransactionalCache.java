@@ -26,6 +26,7 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * 支持事物的cache实现类 ， 主要用于二缓存
  * The 2nd level cache transactional buffer.
  * <p>
  * This class holds all cache entries that are to be added to the 2nd level cache during a Session.
@@ -40,9 +41,28 @@ public class TransactionalCache implements Cache {
 
   private static final Log log = LogFactory.getLog(TransactionalCache.class);
 
+  /**
+   * 委托的 Cache 对象。
+   *
+   * 实际上，就是二级缓存 Cache 对象。
+   */
   private final Cache delegate;
+  /**
+   * 提交时，清空 {@link #delegate}
+   *
+   * 初始时，该值为 false
+   * 清理后{@link #clear()} 时，该值为 true ，表示持续处于清空状态
+   */
   private boolean clearOnCommit;
+  /**
+   * 待提交的 KV 映射
+   *    在事务未提交时，entriesToAddOnCommit 属性，会暂存当前事务新产生的缓存 KV 对。
+   *    在事务提交时，entriesToAddOnCommit 属性，会同步到二级缓存 delegate
+   */
   private final Map<Object, Object> entriesToAddOnCommit;
+  /**
+   * 查找不到的 KEY 集合
+   */
   private final Set<Object> entriesMissedInCache;
 
   public TransactionalCache(Cache delegate) {
@@ -65,13 +85,17 @@ public class TransactionalCache implements Cache {
   @Override
   public Object getObject(Object key) {
     // issue #116
+    // <1> 从 delegate 中获取 key 对应的 value
     Object object = delegate.getObject(key);
+    // <2> 如果不存在，则添加到 entriesMissedInCache 中
     if (object == null) {
       entriesMissedInCache.add(key);
     }
     // issue #146
+    // <3> 如果 clearOnCommit 为 true ，表示处于持续清空状态，则返回 null
     if (clearOnCommit) {
       return null;
+      // <4> 返回 value
     } else {
       return object;
     }
@@ -99,10 +123,13 @@ public class TransactionalCache implements Cache {
   }
 
   public void commit() {
+    // <1> 如果 clearOnCommit 为 true ，则清空 delegate 缓存
     if (clearOnCommit) {
       delegate.clear();
     }
+    // 将 entriesToAddOnCommit、entriesMissedInCache 刷入 delegate 中
     flushPendingEntries();
+    // 重置
     reset();
   }
 
@@ -112,15 +139,19 @@ public class TransactionalCache implements Cache {
   }
 
   private void reset() {
+    // 重置 clearOnCommit 为 false
     clearOnCommit = false;
+    // 清空 entriesToAddOnCommit、entriesMissedInCache
     entriesToAddOnCommit.clear();
     entriesMissedInCache.clear();
   }
 
   private void flushPendingEntries() {
+    // 将 entriesToAddOnCommit 刷入 delegate 中
     for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
       delegate.putObject(entry.getKey(), entry.getValue());
     }
+    // 将 entriesMissedInCache 刷入 delegate 中
     for (Object entry : entriesMissedInCache) {
       if (!entriesToAddOnCommit.containsKey(entry)) {
         delegate.putObject(entry, null);
