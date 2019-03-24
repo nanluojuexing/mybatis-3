@@ -21,12 +21,27 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 
 /**
+ * 主键生成器接口
  * @author Clinton Begin
  */
 public interface KeyGenerator {
 
+  /**
+   * 执行前
+   * @param executor
+   * @param ms
+   * @param stmt
+   * @param parameter
+   */
   void processBefore(Executor executor, MappedStatement ms, Statement stmt, Object parameter);
 
+  /**
+   * 执行后
+   * @param executor
+   * @param ms
+   * @param stmt
+   * @param parameter
+   */
   void processAfter(Executor executor, MappedStatement ms, Statement stmt, Object parameter);
 
 }

@@ -61,20 +61,26 @@ public class DefaultParameterHandler implements ParameterHandler {
   @Override
   public void setParameters(PreparedStatement ps) {
     ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
+    // 获得sql中映射的参数列表
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     if (parameterMappings != null) {
       for (int i = 0; i < parameterMappings.size(); i++) {
         ParameterMapping parameterMapping = parameterMappings.get(i);
+        // 过滤掉存储过程输出的参数
         if (parameterMapping.getMode() != ParameterMode.OUT) {
+          // 记录绑定的实参
           Object value;
+          // 获得参数名称
           String propertyName = parameterMapping.getProperty();
+          // 获得对应的参数值
           if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
             value = boundSql.getAdditionalParameter(propertyName);
-          } else if (parameterObject == null) {
+          } else if (parameterObject == null) { // 整个实参为空
             value = null;
           } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-            value = parameterObject;
+            value = parameterObject; // 实参可以直接通过TypeHandler 转为 jdbcType
           } else {
+            // 获得对应中相应的属性或查找map对象中值
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }

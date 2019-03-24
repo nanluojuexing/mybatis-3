@@ -36,12 +36,17 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ *   基于 Statement#getGeneratedKeys() 方法的 KeyGenerator 实现类，适用于 MySQL、H2 主键生成
+ *
+ *    对应 useGeneratedKeys 及 keyProperty 标签
+ *    @Options(useGeneratedKeys = true, keyProperty = "id")
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public class Jdbc3KeyGenerator implements KeyGenerator {
 
   /**
+   * 共享单例
    * A shared instance.
    *
    * @since 3.4.3
@@ -86,6 +91,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   protected void assignKeysToOneOfParams(final Configuration configuration, ResultSet rs, final String[] keyProperties,
       Map<?, ?> paramMap) throws SQLException {
     // Assuming 'keyProperty' includes the parameter name. e.g. 'param.id'.
+    // <1> 需要有 `.` 。
     int firstDot = keyProperties[0].indexOf('.');
     if (firstDot == -1) {
       throw new ExecutorException(
@@ -94,6 +100,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
               + "Specified key properties are " + ArrayUtil.toString(keyProperties) + " and available parameters are "
               + paramMap.keySet());
     }
+    // 获得真正的参数值
     String paramName = keyProperties[0].substring(0, firstDot);
     Object param;
     if (paramMap.containsKey(paramName)) {
@@ -105,6 +112,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
           + paramMap.keySet());
     }
     // Remove param name from 'keyProperty' string. e.g. 'param.id' -> 'id'
+    // 获得主键的属性配置
     String[] modifiedKeyProperties = new String[keyProperties.length];
     for (int i = 0; i < keyProperties.length; i++) {
       if (keyProperties[i].charAt(firstDot) == '.' && keyProperties[i].startsWith(paramName)) {
@@ -146,6 +154,14 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
     }
   }
 
+  /**
+   * 获得唯一的参数对象
+   *
+   * 如果获得不到唯一的参数对象，则返回 null
+   *
+   * @param parameter 参数对象
+   * @return 唯一的参数对象
+   */
   private Object getSoleParameter(Object parameter) {
     // 如果对象是非map,直接返回
     if (!(parameter instanceof ParamMap || parameter instanceof StrictMap)) {
@@ -166,6 +182,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   }
 
   private TypeHandler<?>[] getTypeHandlers(TypeHandlerRegistry typeHandlerRegistry, MetaObject metaParam, String[] keyProperties, ResultSetMetaData rsmd) throws SQLException {
+    // 获得主键们，对应的每个属性的，对应的 TypeHandler 对象
     TypeHandler<?>[] typeHandlers = new TypeHandler<?>[keyProperties.length];
     for (int i = 0; i < keyProperties.length; i++) {
       if (metaParam.hasSetter(keyProperties[i])) {

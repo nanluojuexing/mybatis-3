@@ -42,11 +42,20 @@ public abstract class BaseStatementHandler implements StatementHandler {
   protected final Configuration configuration;
   protected final ObjectFactory objectFactory;
   protected final TypeHandlerRegistry typeHandlerRegistry;
+  /**
+   * 结果集映射对象
+   */
   protected final ResultSetHandler resultSetHandler;
+  /**
+   * 为sql语句绑定实参，替换对应的 ？占位符
+   */
   protected final ParameterHandler parameterHandler;
 
   protected final Executor executor;
   protected final MappedStatement mappedStatement;
+  /**
+   * 记录用户设置的 offset和limit,用于在结果中定位映射的其实位置和结束位置
+   */
   protected final RowBounds rowBounds;
 
   protected BoundSql boundSql;
