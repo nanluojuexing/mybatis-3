@@ -35,12 +35,19 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
   private final SqlSessionFactory sqlSessionFactory;
+  /**
+   * jdk 动态代理的 proxy ,目标增强 defaultSqlSession
+   */
   private final SqlSession sqlSessionProxy;
 
+  /**
+   * 线程局部变量sqlSession
+   */
   private final ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<>();
 
   private SqlSessionManager(SqlSessionFactory sqlSessionFactory) {
     this.sqlSessionFactory = sqlSessionFactory;
+    // proxy代理
     this.sqlSessionProxy = (SqlSession) Proxy.newProxyInstance(
         SqlSessionFactory.class.getClassLoader(),
         new Class[]{SqlSession.class},
@@ -75,6 +82,9 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
     return new SqlSessionManager(sqlSessionFactory);
   }
 
+  /**
+   *  设置线程局部变量sqlSession的方法
+   */
   public void startManagedSession() {
     this.localSqlSession.set(openSession());
   }
@@ -347,11 +357,13 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
       final SqlSession sqlSession = SqlSessionManager.this.localSqlSession.get();
       if (sqlSession != null) {
         try {
+          // 存在局部变量sqlSession (不提交，不会滚，不关闭，可在线程生命周期内，自定义sqlSession的提交、回滚、关闭时机，达到复用sqlSession的效果)
           return method.invoke(sqlSession, args);
         } catch (Throwable t) {
           throw ExceptionUtil.unwrapThrowable(t);
         }
       } else {
+        // 2、不存在线程局部变量sqlSession，创建一个自动提交、回滚、关闭的SqlSession（提交、回滚、关闭，将sqlSession的生命周期完全限定在方法内部）
         try (SqlSession autoSqlSession = openSession()) {
           try {
             final Object result = method.invoke(autoSqlSession, args);

@@ -355,6 +355,7 @@ public abstract class BaseExecutor implements Executor {
       localOutputParameterCache.clear();
     }
   }
+  /****  模版方法 （模版设计模式）  ****/
 
   protected abstract int doUpdate(MappedStatement ms, Object parameter)
       throws SQLException;

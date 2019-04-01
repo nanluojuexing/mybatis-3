@@ -43,7 +43,7 @@ import org.apache.ibatis.transaction.Transaction;
 public class ReuseExecutor extends BaseExecutor {
 
   /**
-   * statement 缓存
+   * statement 缓存 key =sql ，value = statement 不同的sql，对应不同的statement
    */
   private final Map<String, Statement> statementMap = new HashMap<>();
 

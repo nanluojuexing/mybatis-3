@@ -44,7 +44,7 @@ public class BatchExecutor extends BaseExecutor {
   public static final int BATCH_UPDATE_RETURN_VALUE = Integer.MIN_VALUE + 1002;
 
   /**
-   * statement数组
+   * statement数组,缓存多个statement对象，每个对象等待 addBatch() 后，等待执行
    */
   private final List<Statement> statementList = new ArrayList<>();
   /**
@@ -72,6 +72,7 @@ public class BatchExecutor extends BaseExecutor {
     // 创建statement对象
     final StatementHandler handler = configuration.newStatementHandler(this, ms, parameterObject, RowBounds.DEFAULT, null, null);
     final BoundSql boundSql = handler.getBoundSql();
+    // 本次执行的sql
     final String sql = boundSql.getSql();
     final Statement stmt;
     // <2> 如果匹配最后一次 currentSql 和 currentStatement ，则聚合到 BatchResult 中
