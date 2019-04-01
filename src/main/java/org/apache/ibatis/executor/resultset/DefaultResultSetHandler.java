@@ -77,6 +77,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   private final MappedStatement mappedStatement;
   private final RowBounds rowBounds;
   private final ParameterHandler parameterHandler;
+  /**
+   * 用户指定的用于处理结果的处理器，一般情况下不需要指定
+   */
   private final ResultHandler<?> resultHandler;
   private final BoundSql boundSql;
   private final TypeHandlerRegistry typeHandlerRegistry;
@@ -93,9 +96,19 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   private final Map<CacheKey, List<PendingRelation>> pendingRelations = new HashMap<>();
 
   // Cached Automappings
+  /**
+   * 自动映射的缓存
+   *
+   * KEY：{@link ResultMap#getId()} + ":" +  columnPrefix
+   *
+   * @see #createRowKeyForUnmappedProperties(ResultMap, ResultSetWrapper, CacheKey, String)
+   */
   private final Map<String, List<UnMappedColumnAutoMapping>> autoMappingsCache = new HashMap<>();
 
   // temporary marking flag that indicate using constructor mapping (use field to reduce memory usage)
+  /**
+   * 是否使用构造方法创建该结果对象
+   */
   private boolean useConstructorMappings;
 
   private static class PendingRelation {
@@ -177,23 +190,41 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
   // HANDLE RESULT SETS
   //
+
+  /**
+   * 处理 resultSet结果集，转成映射的对应结果
+   * @param stmt Statement 对象
+   * @return
+   * @throws SQLException
+   */
   @Override
   public List<Object> handleResultSets(Statement stmt) throws SQLException {
     ErrorContext.instance().activity("handling results").object(mappedStatement.getId());
 
+    // <1> 多 ResultSet 的结果集合，每个 ResultSet 对应一个 Object 对象。而实际上，每个 Object 是 List<Object> 对象。
+    // 在不考虑存储过程的多 ResultSet 的情况，普通的查询，实际就一个 ResultSet ，也就是说，multipleResults 最多就一个元素。
     final List<Object> multipleResults = new ArrayList<>();
 
     int resultSetCount = 0;
+    // 获取第一个resultset对象，可能存在多个，这里只获取第一个resultset,并包装为 resultSetWrapper对象
     ResultSetWrapper rsw = getFirstResultSet(stmt);
-
+    // <3> 获得 ResultMap 数组，resultmap节点会被解析为resultMap对象，保存在对应的集合中，如果sql节点能够产生多个resultset，
+    // 可以在sql节点的resultmap属性中配置多个resultmap节点的id，之间通过 ，分隔，实现对多个结果的操作
+    // 在不考虑存储过程的多 ResultSet 的情况，普通的查询，实际就一个 ResultSet ，也就是说，resultMaps 就一个元素
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
     int resultMapCount = resultMaps.size();
+    // 校验
     validateResultMapsCount(rsw, resultMapCount);
     while (rsw != null && resultMapCount > resultSetCount) {
+      // <4.1> 获得 ResultMap 对象
       ResultMap resultMap = resultMaps.get(resultSetCount);
+      // <4.2> 处理 ResultSet ，将结果添加到 multipleResults 中
       handleResultSet(rsw, resultMap, multipleResults, null);
+      // <4.3> 获得下一个 ResultSet 对象，并封装成 ResultSetWrapper 对象
       rsw = getNextResultSet(stmt);
+      // <4.4> 清理
       cleanUpAfterHandlingResultSet();
+      // resultSetCount ++
       resultSetCount++;
     }
 
@@ -211,7 +242,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         resultSetCount++;
       }
     }
-
+    // 如果是单元素，返回首元素
     return collapseSingleResultList(multipleResults);
   }
 
@@ -233,15 +264,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     return new DefaultCursor<>(this, resultMap, rsw, rowBounds);
   }
 
+
   private ResultSetWrapper getFirstResultSet(Statement stmt) throws SQLException {
     ResultSet rs = stmt.getResultSet();
     while (rs == null) {
       // move forward to get the first resultset in case the driver
       // doesn't return the resultset as the first result (HSQLDB 2.1)
-      if (stmt.getMoreResults()) {
+      if (stmt.getMoreResults()) { // 检测是否还有待处理的 resultset对象
         rs = stmt.getResultSet();
       } else {
-        if (stmt.getUpdateCount() == -1) {
+        if (stmt.getUpdateCount() == -1) { // 没有待处理的resultset对象
           // no more results. Must be no resultset
           break;
         }
@@ -291,21 +323,33 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     }
   }
 
+  /**
+   * 处理resultset,将结果添加到multipleResults
+   *
+   * @throws SQLException
+   */
   private void handleResultSet(ResultSetWrapper rsw, ResultMap resultMap, List<Object> multipleResults, ResultMapping parentMapping) throws SQLException {
     try {
+      // <1> 暂时忽略，因为只有存储过程的情况，调用该方法，parentMapping 为非空
       if (parentMapping != null) {
         handleRowValues(rsw, resultMap, null, RowBounds.DEFAULT, parentMapping);
       } else {
+        // <2> 如果没有自定义的 resultHandler ，则创建默认的 DefaultResultHandler 对象
         if (resultHandler == null) {
+          // <2> 创建 DefaultResultHandler 对象
           DefaultResultHandler defaultResultHandler = new DefaultResultHandler(objectFactory);
+          // <3> 处理 ResultSet 返回的每一行 Row
           handleRowValues(rsw, resultMap, defaultResultHandler, rowBounds, null);
+          // <4> 添加 defaultResultHandler 的处理的结果，到 multipleResults 中
           multipleResults.add(defaultResultHandler.getResultList());
         } else {
+          // <3> 处理 ResultSet 返回的每一行 Row
           handleRowValues(rsw, resultMap, resultHandler, rowBounds, null);
         }
       }
     } finally {
       // issue #228 (close resultsets)
+      // 关闭 ResultSet 对象
       closeResultSet(rsw.getResultSet());
     }
   }
@@ -318,13 +362,26 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
   // HANDLE ROWS FOR SIMPLE RESULTMAP
   //
-
+  /**
+   * 处理 ResultSet 返回的每一行 Row
+   * @param rsw
+   * @param resultMap
+   * @param resultHandler
+   * @param rowBounds
+   * @param parentMapping
+   * @throws SQLException
+   */
   public void handleRowValues(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler<?> resultHandler, RowBounds rowBounds, ResultMapping parentMapping) throws SQLException {
+    // 处理嵌套映射的情况
     if (resultMap.hasNestedResultMaps()) {
+      // 校验不要使用 rowbounds
       ensureNoRowBounds();
+      // 校验不要使用自定义的resulthandler
       checkResultHandler();
+      // 处理嵌套的结果集映射
       handleRowValuesForNestedResultMap(rsw, resultMap, resultHandler, rowBounds, parentMapping);
     } else {
+      // 处理简单结果映射
       handleRowValuesForSimpleResultMap(rsw, resultMap, resultHandler, rowBounds, parentMapping);
     }
   }
@@ -344,14 +401,31 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     }
   }
 
+  /**
+   * 简单结果映射
+   * @param rsw
+   * @param resultMap
+   * @param resultHandler
+   * @param rowBounds
+   * @param parentMapping
+   * @throws SQLException
+   */
   private void handleRowValuesForSimpleResultMap(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler<?> resultHandler, RowBounds rowBounds, ResultMapping parentMapping)
       throws SQLException {
+    // 创建对应的 DefaultResultContext 对象
     DefaultResultContext<Object> resultContext = new DefaultResultContext<>();
+    // 获得 resultSet对象，并跳到 rowbounds 指定的开始位置
     ResultSet resultSet = rsw.getResultSet();
     skipRows(resultSet, rowBounds);
-    while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
+    // 循环
+    while (shouldProcessMoreRows(resultContext, rowBounds) // 是否继续处理resultset
+            && !resultSet.isClosed()  // resultset是否已经关闭
+            && resultSet.next()) { // 是否还有下一条
+      // 根据该行记录以及 ResultMap.discriminator ，决定映射使用的 ResultMap 对象
       ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
+      // 根据最终确定的 ResultMap 对 ResultSet 中的该行记录进行映射，得到映射后的结果对象
       Object rowValue = getRowValue(rsw, discriminatedResultMap, null);
+      // 将映射创建的结果对象添加到 ResultHandler.resultList 中保存
       storeObject(resultHandler, resultContext, rowValue, parentMapping, resultSet);
     }
   }
@@ -376,10 +450,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private void skipRows(ResultSet rs, RowBounds rowBounds) throws SQLException {
     if (rs.getType() != ResultSet.TYPE_FORWARD_ONLY) {
+      // 直接跳到开始的位置
       if (rowBounds.getOffset() != RowBounds.NO_ROW_OFFSET) {
         rs.absolute(rowBounds.getOffset());
       }
     } else {
+      // 循环。不断跳到开始的位置
       for (int i = 0; i < rowBounds.getOffset(); i++) {
         if (!rs.next()) {
           break;
@@ -392,17 +468,36 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   // GET VALUE FROM ROW FOR SIMPLE RESULT MAP
   //
 
+  /**
+   * 根据最终确定的 ResultMap 对 ResultSet 中的该行记录进行映射，得到映射后的结果对象
+   * @param rsw
+   * @param resultMap
+   * @param columnPrefix
+   * @return
+   * @throws SQLException
+   */
   private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, String columnPrefix) throws SQLException {
+    // <1> 创建 ResultLoaderMap 对象
     final ResultLoaderMap lazyLoader = new ResultLoaderMap();
+    // <2> 创建映射后的结果对象
     Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
+    // <3> 如果 hasTypeHandlerForResultObject(rsw, resultMap.getType()) 返回 true ，意味着 rowValue 是基本类型，无需执行下列逻辑。
     if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+      // <4> 创建 MetaObject 对象，用于访问 rowValue 对象
       final MetaObject metaObject = configuration.newMetaObject(rowValue);
+      // <5> foundValues 代表，是否成功映射任一属性。若成功，则为 true ，若失败，则为 false
       boolean foundValues = this.useConstructorMappings;
+      /// <6.1> 判断是否开启自动映射功能
       if (shouldApplyAutomaticMappings(resultMap, false)) {
+        // <6.2> 自动映射未明确的列
         foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
       }
+      // <7> 映射 ResultMap 中明确映射的列
       foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
+      // <8> ↑↑↑ 至此，当前 ResultSet 的该行记录的数据，已经完全映射到结果对象 rowValue 的对应属性种
       foundValues = lazyLoader.size() > 0 || foundValues;
+      // <9> 如果没有成功映射任意属性，则置空 rowValue 对象。
+      // 当然，如果开启 `configuration.returnInstanceForEmptyRow` 属性，则不置空。默认情况下，该值为 false
       rowValue = foundValues || configuration.isReturnInstanceForEmptyRow() ? rowValue : null;
     }
     return rowValue;
@@ -584,12 +679,26 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   // INSTANTIATION & CONSTRUCTOR MAPPING
   //
 
+  /**
+   * 创建映射后的结果对象
+   * @param rsw
+   * @param resultMap
+   * @param lazyLoader
+   * @param columnPrefix
+   * @return
+   * @throws SQLException
+   */
   private Object createResultObject(ResultSetWrapper rsw, ResultMap resultMap, ResultLoaderMap lazyLoader, String columnPrefix) throws SQLException {
+    // 是否使用构造方法创建该结果对象，此处将重置
     this.useConstructorMappings = false; // reset previous mapping result
+    // 记录使用的构造方法的参数类型的数组
     final List<Class<?>> constructorArgTypes = new ArrayList<>();
+    // 记录使用的构造方法的参数值的数组
     final List<Object> constructorArgs = new ArrayList<>();
+    // 创建映射后的结果对象
     Object resultObject = createResultObject(rsw, resultMap, constructorArgTypes, constructorArgs, columnPrefix);
     if (resultObject != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+      // 如果有内嵌的查询，并且开启延迟加载，则创建结果对象的代理对象
       final List<ResultMapping> propertyMappings = resultMap.getPropertyResultMappings();
       for (ResultMapping propertyMapping : propertyMappings) {
         // issue gcode #109 && issue #149
@@ -814,19 +923,35 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   // DISCRIMINATOR
   //
 
+  /**
+   * 根据该行记录以及 ResultMap.discriminator ，决定映射使用的 ResultMap 对象
+   * @param rs
+   * @param resultMap
+   * @param columnPrefix
+   * @return
+   * @throws SQLException
+   */
   public ResultMap resolveDiscriminatedResultMap(ResultSet rs, ResultMap resultMap, String columnPrefix) throws SQLException {
+    // 记录已经处理过的 Discriminator 对应的 ResultMap 的编号
     Set<String> pastDiscriminators = new HashSet<>();
+    // 如果存在 Discriminator 对象，则基于其获得 ResultMap 对象
     Discriminator discriminator = resultMap.getDiscriminator();
-    while (discriminator != null) {
+    while (discriminator != null) { // 因为 Discriminator 可以嵌套 Discriminator ，所以是一个递归的过程
+      // 获得 Discriminator 的指定字段，在 ResultSet 中该字段的值
       final Object value = getDiscriminatorValue(rs, discriminator, columnPrefix);
+      // 从 Discriminator 获取该值对应的 ResultMap 的编号
       final String discriminatedMapId = discriminator.getMapIdFor(String.valueOf(value));
+      // 如果存在，则使用该 ResultMap 对象
       if (configuration.hasResultMap(discriminatedMapId)) {
+        // 获得该 ResultMap 对象
         resultMap = configuration.getResultMap(discriminatedMapId);
+        // 判断，如果出现“重复”的情况，结束循环
         Discriminator lastDiscriminator = discriminator;
         discriminator = resultMap.getDiscriminator();
         if (discriminator == lastDiscriminator || !pastDiscriminators.add(discriminatedMapId)) {
           break;
         }
+        // 如果不存在，直接结束循环
       } else {
         break;
       }
