@@ -30,7 +30,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 /**
- * 由的 StatementHandler 对象。这里才有装饰器，可以优化成共产
+ * 路由 StatementHandler 对象。这里的装饰器，可以优化成工厂
  * @author Clinton Begin
  */
 public class RoutingStatementHandler implements StatementHandler {
