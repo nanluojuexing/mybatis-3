@@ -54,6 +54,9 @@ public final class MappedStatement {
   private List<ResultMap> resultMaps;
   private boolean flushCacheRequired;
   private boolean useCache;
+  /**
+   *
+   */
   private boolean resultOrdered;
   /**
    * SQL的类型

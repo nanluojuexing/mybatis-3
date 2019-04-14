@@ -47,10 +47,18 @@ public class DefaultResultContext<T> implements ResultContext<T> {
     return stopped;
   }
 
+  /**
+   * 当前结果对象
+   *
+   * @param resultObject 当前结果对象
+   */
   public void nextResultObject(T resultObject) {
+    // 数量 + 1
     resultCount++;
+    // 当前结果对象
     this.resultObject = resultObject;
   }
+
 
   @Override
   public void stop() {
