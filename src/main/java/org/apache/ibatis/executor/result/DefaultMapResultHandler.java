@@ -25,11 +25,19 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 
 /**
+ * 将结果的当前元素，聚合为map
+ *
  * @author Clinton Begin
  */
 public class DefaultMapResultHandler<K, V> implements ResultHandler<V> {
 
+  /**
+   * 结果基于map集合
+   */
   private final Map<K, V> mappedResults;
+  /**
+   * {@link #mappedResults} 的 KEY 属性名
+   */
   private final String mapKey;
   private final ObjectFactory objectFactory;
   private final ObjectWrapperFactory objectWrapperFactory;

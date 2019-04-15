@@ -148,6 +148,9 @@ public class Configuration {
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
+  /**
+   * MappedStatement 映射
+   */
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
       .conflictMessageProducer((savedValue, targetValue) ->
           ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
@@ -750,9 +753,11 @@ public class Configuration {
   }
 
   public MappedStatement getMappedStatement(String id, boolean validateIncompleteStatements) {
+    // 这里校验所有的 MappedStatement 已经构造完毕
     if (validateIncompleteStatements) {
       buildAllStatements();
     }
+    // 获得 MappedStatement
     return mappedStatements.get(id);
   }
 
@@ -807,11 +812,13 @@ public class Configuration {
   protected void buildAllStatements() {
     parsePendingResultMaps();
     if (!incompleteCacheRefs.isEmpty()) {
+      // 保证 incompleteCacheRefs 被解析完
       synchronized (incompleteCacheRefs) {
         incompleteCacheRefs.removeIf(x -> x.resolveCacheRef() != null);
       }
     }
     if (!incompleteStatements.isEmpty()) {
+      // 保证 incompleteStatements 被解析完
       synchronized (incompleteStatements) {
         incompleteStatements.removeIf(x -> {
           x.parseStatementNode();
@@ -820,6 +827,7 @@ public class Configuration {
       }
     }
     if (!incompleteMethods.isEmpty()) {
+      // 保证 incompleteMethods 被解析完
       synchronized (incompleteMethods) {
         incompleteMethods.removeIf(x -> {
           x.resolve();
@@ -833,6 +841,7 @@ public class Configuration {
     if (incompleteResultMaps.isEmpty()) {
       return;
     }
+    // 保证 incompleteResults 被解析
     synchronized (incompleteResultMaps) {
       boolean resolved;
       IncompleteElementException ex = null;

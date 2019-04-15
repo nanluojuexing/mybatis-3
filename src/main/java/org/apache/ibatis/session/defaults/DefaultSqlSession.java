@@ -50,7 +50,13 @@ public class DefaultSqlSession implements SqlSession {
   private final Configuration configuration;
   private final Executor executor;
 
+  /**
+   * 是否自动提交事物
+   */
   private final boolean autoCommit;
+  /**
+   * 是否发生数据变更
+   */
   private boolean dirty;
   private List<Cursor<?>> cursorList;
 
@@ -95,6 +101,7 @@ public class DefaultSqlSession implements SqlSession {
 
   @Override
   public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds) {
+    // 执行查询
     final List<? extends V> list = selectList(statement, parameter, rowBounds);
     final DefaultMapResultHandler<K, V> mapResultHandler = new DefaultMapResultHandler<>(mapKey,
             configuration.getObjectFactory(), configuration.getObjectWrapperFactory(), configuration.getReflectorFactory());
@@ -143,7 +150,9 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      // 获得 MappedStatement
       MappedStatement ms = configuration.getMappedStatement(statement);
+      // 执行查询
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
@@ -192,6 +201,7 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public int update(String statement, Object parameter) {
     try {
+      // 标记是否执行写操作
       dirty = true;
       MappedStatement ms = configuration.getMappedStatement(statement);
       return executor.update(ms, wrapCollection(parameter));
@@ -221,6 +231,7 @@ public class DefaultSqlSession implements SqlSession {
   public void commit(boolean force) {
     try {
       executor.commit(isCommitOrRollbackRequired(force));
+      // 标记 dirty 为 false
       dirty = false;
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error committing transaction.  Cause: " + e, e);
@@ -246,6 +257,10 @@ public class DefaultSqlSession implements SqlSession {
     }
   }
 
+  /**
+   * 提交批处理
+   * @return
+   */
   @Override
   public List<BatchResult> flushStatements() {
     try {
@@ -312,19 +327,32 @@ public class DefaultSqlSession implements SqlSession {
     cursorList.add(cursor);
   }
 
+  /**
+   * 判断是否需要回滚
+   * @param force
+   * @return
+   */
   private boolean isCommitOrRollbackRequired(boolean force) {
     return (!autoCommit && dirty) || force;
   }
 
+  /**
+   * 若参数 object 是 Collection、Array、Map 参数类型的情况下，包装成 Map 返回
+   * @param object
+   * @return
+   */
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
+      // 如果是集合，则添加到 collection 中
       StrictMap<Object> map = new StrictMap<>();
       map.put("collection", object);
+      // 如果是 List ，则添加到 list 中
       if (object instanceof List) {
         map.put("list", object);
       }
       return map;
     } else if (object != null && object.getClass().isArray()) {
+      // 如果是 Array ，则添加到 array 中
       StrictMap<Object> map = new StrictMap<>();
       map.put("array", object);
       return map;

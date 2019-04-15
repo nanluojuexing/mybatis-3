@@ -87,6 +87,13 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   * 获得 sqlSession 对象
+   * @param execType
+   * @param level
+   * @param autoCommit
+   * @return
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
@@ -105,6 +112,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
   private SqlSession openSessionFromConnection(ExecutorType execType, Connection connection) {
     try {
+      // 是否可以自动提交
       boolean autoCommit;
       try {
         autoCommit = connection.getAutoCommit();
@@ -126,9 +134,11 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
   }
 
   private TransactionFactory getTransactionFactoryFromEnvironment(Environment environment) {
+    // 情况一，创建 ManagedTransactionFactory 对象
     if (environment == null || environment.getTransactionFactory() == null) {
       return new ManagedTransactionFactory();
     }
+    // 情况二，使用 `environment` 中的
     return environment.getTransactionFactory();
   }
 

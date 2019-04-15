@@ -31,6 +31,7 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
  * @author Clinton Begin
  *
  * 对象元数据，提供对象的属性值的获取和设置等方法
+ *      用于反射创建对象、反射从对象中获取属性值、反射给对象设置属性值，参数设置和结果封装
  */
 public class MetaObject {
 

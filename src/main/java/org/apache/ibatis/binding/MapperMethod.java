@@ -89,20 +89,27 @@ public class MapperMethod {
         break;
       }
       case SELECT:
+        // <2.1> 无返回，并且有 ResultHandler 方法参数，则将查询的结果，提交给 ResultHandler 进行处理
         if (method.returnsVoid() && method.hasResultHandler()) {
           executeWithResultHandler(sqlSession, args);
           result = null;
+          // <2.2> 执行查询，返回列表
         } else if (method.returnsMany()) {
           result = executeForMany(sqlSession, args);
+          // <2.3> 执行查询，返回 Map
         } else if (method.returnsMap()) {
           result = executeForMap(sqlSession, args);
+          // <2.4> 执行查询，返回 Cursor
         } else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
+          // <2.5> 执行查询，返回单个对象
         } else {
+          // 转换参数
           Object param = method.convertArgsToSqlCommandParam(args);
+          // 查询单条
           result = sqlSession.selectOne(command.getName(), param);
-          if (method.returnsOptional()
-              && (result == null || !method.getReturnType().equals(result.getClass()))) {
+          if (method.returnsOptional() &&
+                  (result == null || !method.getReturnType().equals(result.getClass()))) {
             result = Optional.ofNullable(result);
           }
         }
