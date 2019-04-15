@@ -532,7 +532,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   /**
-   * 绑定mapper
+   * 绑定mapper  namespace = org.apache.demo.dao.StudentMapper
    */
   private void bindMapperForNamespace() {
     String namespace = builderAssistant.getCurrentNamespace();
@@ -544,8 +544,8 @@ public class XMLMapperBuilder extends BaseBuilder {
       } catch (ClassNotFoundException e) {
         //ignore, bound type is not required
       }
-      // 不存在该 Mapper 接口，则进行添加
       if (boundType != null) {
+        // 不存在该 Mapper 接口，则进行添加
         if (!configuration.hasMapper(boundType)) {
           // Spring may not know the real resource name so we set a flag
           // to prevent loading again this resource from the mapper interface

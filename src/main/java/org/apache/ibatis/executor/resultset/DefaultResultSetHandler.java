@@ -416,8 +416,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     DefaultResultContext<Object> resultContext = new DefaultResultContext<>();
     // 获得 resultSet对象，并跳到 rowbounds 指定的开始位置
     ResultSet resultSet = rsw.getResultSet();
+    // 跳到指定的位置
     skipRows(resultSet, rowBounds);
-    // 循环
+    // 循环 获取 limit 数据
     while (shouldProcessMoreRows(resultContext, rowBounds) // 是否继续处理resultset
             && !resultSet.isClosed()  // resultset是否已经关闭
             && resultSet.next()) { // 是否还有下一条

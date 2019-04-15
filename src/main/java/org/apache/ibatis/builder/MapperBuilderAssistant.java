@@ -240,9 +240,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
       if (!configuration.hasResultMap(extend)) {
         throw new IncompleteElementException("Could not find a parent resultmap with id '" + extend + "'");
       }
+      // 处理继承resultmap属性
       ResultMap resultMap = configuration.getResultMap(extend);
       // 获取 extend 的 ResultMap 对象的 ResultMapping 集合，并移除 resultMappings
       List<ResultMapping> extendedResultMappings = new ArrayList<>(resultMap.getResultMappings());
+      // 删除重复元素
       extendedResultMappings.removeAll(resultMappings);
       // Remove parent constructor if this resultMap declares a constructor.
       // 判断当前的 resultMappings 是否有构造方法，如果有，则从 extendedResultMappings 移除所有的构造类型的 ResultMapping 们
