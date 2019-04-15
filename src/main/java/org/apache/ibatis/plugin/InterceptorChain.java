@@ -27,7 +27,7 @@ public class InterceptorChain {
   private final List<Interceptor> interceptors = new ArrayList<>();
 
   /**
-   * 应用所有的拦截器到指定目标对象
+   * 应用所有的拦截器到指定目标对象,注册拦截器
    * @param target
    * @return
    */

@@ -44,11 +44,13 @@ public class RawSqlSource implements SqlSource {
   public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> clazz = parameterType == null ? Object.class : parameterType;
+    // 完成 #{} 替换为 ？
     sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<>());
   }
 
   private static String getSql(Configuration configuration, SqlNode rootSqlNode) {
     DynamicContext context = new DynamicContext(configuration, null);
+    // 创建RawSqlSource时，就完成sql的拼接工作，因为它没有动态sql的内容，Mybatis初始化时，就能确定最终的sql
     rootSqlNode.apply(context);
     return context.getSql();
   }

@@ -28,6 +28,19 @@ import org.apache.ibatis.session.RowBounds;
 
 /**
  * 基于从数据库查询主键的 KeyGenerator 实现类，适用于 Oracle、PostgreSQL
+ *
+ * <insert id="insertStudent" parameterType="Student" >
+ * 		<selectKey keyProperty="studId" resultType="int" order="BEFORE">
+ * 			SELECT ELEARNING.STUD_ID_SEQ.NEXTVAL FROM DUAL
+ * 		</selectKey>
+ * 		INSERT INTO
+ * 		STUDENTS(STUD_ID, NAME, EMAIL, DOB, PHONE)
+ * 		VALUES(#{studId}, #{name},
+ * 		#{email}, #{dob}, #{phone})
+ * 	</insert>
+ *
+ *
+ *
  * @author Clinton Begin
  * @author Jeff Butler
  */

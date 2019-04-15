@@ -27,6 +27,9 @@ import org.apache.ibatis.session.Configuration;
 public class ForEachSqlNode implements SqlNode {
   public static final String ITEM_PREFIX = "__frch_";
 
+  /**
+   * gonl表达式
+   */
   private final ExpressionEvaluator evaluator;
   /**
    * 集合表达式
