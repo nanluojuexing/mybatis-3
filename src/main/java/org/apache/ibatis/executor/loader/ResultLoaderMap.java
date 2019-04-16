@@ -51,6 +51,7 @@ public class ResultLoaderMap {
 
   public void addLoader(String property, MetaObject metaResultObject, ResultLoader resultLoader) {
     String upperFirst = getUppercaseFirstProperty(property);
+    // 已存在，抛出异常
     if (!upperFirst.equalsIgnoreCase(property) && loaderMap.containsKey(upperFirst)) {
       throw new ExecutorException("Nested lazy loaded result property '" + property
               + "' for query id '" + resultLoader.mappedStatement.getId()

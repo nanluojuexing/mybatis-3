@@ -22,6 +22,8 @@ import org.apache.ibatis.reflection.factory.ObjectFactory;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 创建代理对象，用于创建需要延迟加载属性的结果对象
+ *
  * @author Eduardo Macarron
  */
 public interface ProxyFactory {
