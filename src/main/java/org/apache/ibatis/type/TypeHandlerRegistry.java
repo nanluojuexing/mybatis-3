@@ -386,13 +386,17 @@ public final class TypeHandlerRegistry {
 
   @SuppressWarnings("unchecked")
   /**
-   * 2 仅仅注册handler 最终都是调用 3 完成注册
+   *
+   * 2
+   *
+   * 仅仅注册handler 最终都是调用 3 完成注册
    */
   public <T> void register(TypeHandler<T> typeHandler) {
     boolean mappedTypeFound = false;
     MappedTypes mappedTypes = typeHandler.getClass().getAnnotation(MappedTypes.class);
     // 优先，使用 @MappedTypes 注解的 Java Type 进行注册
     if (mappedTypes != null) {
+      // 根据注解中指定的java类型进行注册
       for (Class<?> handledType : mappedTypes.value()) {
         register(handledType, typeHandler);
         mappedTypeFound = true;
@@ -421,6 +425,13 @@ public final class TypeHandlerRegistry {
     register((Type) javaType, typeHandler);
   }
 
+  /**
+   * 3 基于 @MappedTypes 注解，调用 #register(Class<?> javaTypeClass, Class<?> typeHandlerClass) 方法，注册指定 Java Type 的指定 TypeHandler 类
+   *
+   * @param javaType
+   * @param typeHandler
+   * @param <T>
+   */
   private <T> void register(Type javaType, TypeHandler<? extends T> typeHandler) {
     // 获得 MappedJdbcTypes 注解
     MappedJdbcTypes mappedJdbcTypes = typeHandler.getClass().getAnnotation(MappedJdbcTypes.class);
@@ -485,7 +496,10 @@ public final class TypeHandlerRegistry {
   // Only handler type
 
   /**
-   * 6 注册指定handler
+   *
+   * 6
+   *
+   * 1 注册指定handler
    * @param typeHandlerClass
    */
   public void register(Class<?> typeHandlerClass) {
@@ -493,16 +507,51 @@ public final class TypeHandlerRegistry {
     // 1。获得 @MappedType注解
     MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);
     if (mappedTypes != null) {
+
+      // first scan the enum under basePackage
+      // 这里添加自定义类型处理，添加到对应的处理其中 这里增加枚举类型通用处理方式 处理， 需要自定义 枚举类型的handler，需要在mybatis的配置文件中 <typeHandlers> 标签内增加通用的handler 如扫描示例中的 UniversalEnumHandler
+
+      /**
+       * public final class UniversalEnumHandler<E extends BaseEnum> extends BaseTypeHandler<E>{
+       *
+       *     private Class<E> type;
+       * 	private E [] enums;
+       *
+       *   public UniversalEnumHandler(Class<E> type) {
+       *         if (type == null)
+       *             throw new IllegalArgumentException("Type argument cannot be null");
+       *         this.type = type;
+       *         this.enums = type.getEnumConstants();
+       *         if (this.enums == null)
+       *             throw new IllegalArgumentException(type.getSimpleName()
+       *                     + " does not represent an enum type.");
+       *     }
+       *
+       *   方法实现忽略
+       *
+       * }
+       */
+
+      for(String basePackage:mappedTypes.basePackage()){
+        ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
+        resolverUtil.find(new ResolverUtil.IsA(BaseEnum.class), basePackage);
+        Set<Class<? extends Class<?>>> mTypes = resolverUtil.getClasses();
+        for (Class<?> javaTypeClass : mTypes) {
+          register(javaTypeClass, typeHandlerClass);
+        }
+      }
+
       for (Class<?> javaTypeClass : mappedTypes.value()) {
         register(javaTypeClass, typeHandlerClass);
         mappedTypeFound = true;
       }
     }
-    // 2。才使用注解，直接注册
+    // 2 未使用注解，直接注册
     if (!mappedTypeFound) {
       // 调用 2
       register(getInstance(null, typeHandlerClass));
     }
+
   }
 
   // java type + handler type
@@ -556,7 +605,9 @@ public final class TypeHandlerRegistry {
   // scan
 
   /**
-   * 1。扫描包下面的所有的handler,并注册 调用 6
+   * 1
+   *
+   * 扫描包下面的所有的handler,并注册
    * @param packageName
    */
   public void register(String packageName) {

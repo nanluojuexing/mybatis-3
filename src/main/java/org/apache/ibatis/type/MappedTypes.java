@@ -35,4 +35,6 @@ public @interface MappedTypes {
    * @return
    */
   Class<?>[] value();
+
+  String[] basePackage() default {};
 }
