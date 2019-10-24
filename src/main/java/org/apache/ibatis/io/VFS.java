@@ -61,7 +61,7 @@ public abstract class VFS {
       impls.addAll(Arrays.asList((Class<? extends VFS>[]) IMPLEMENTATIONS));
 
       // Try each implementation class until a valid one is found
-      // 这里遍历完，获得的是最后一个符合条件的 vfs
+      // 这里遍历完，获得的是first符合条件的 vfs
       VFS vfs = null;
       for (int i = 0; vfs == null || !vfs.isValid(); i++) {
         Class<? extends VFS> impl = impls.get(i);
